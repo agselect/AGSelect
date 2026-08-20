@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu Automotora - Prototipo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+        body { background-color: #f8f9fa; color: #333; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #fff; border-bottom: 1px solid #eee; }
+        .logo { font-weight: bold; font-size: 1.2rem; }
+        nav a { margin-left: 1rem; text-decoration: none; color: #555; }
+        .hero { text-align: center; padding: 4rem 1rem; background: #fff; margin-bottom: 2rem; }
+        .hero h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
+        .hero p { color: #666; margin-bottom: 1.5rem; }
+        .btn { display: inline-block; background: #000; color: #fff; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
+        .card { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #eee; }
+        .card img { width: 100%; height: 200px; object-fit: cover; }
+        .card-body { padding: 1rem; }
+        .price { font-size: 1.25rem; font-weight: bold; color: #111; margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">TU AUTOMOTORA</div>
+        <nav>
+            <a href="#">Inicio</a>
+            <a href="#">Stock</a>
+            <a href="#">Contacto</a>
+        </nav>
+    </header>
+    <section class="hero">
+        <h1>Tu próximo auto lo encuentras acá</h1>
+        <p>Compramos y vendemos vehículos de forma simple y segura.</p>
+        <a href="https://wa.me/56912345678" class="btn">Contactar por WhatsApp</a>
+    </section>
+    <main class="grid">
+        <div class="card">
+            <img src="https://via.placeholder.com/400x250" alt="Auto">
+            <div class="card-body">
+                <h3>Volkswagen Tiguan</h3>
+                <p>2022 • 60.000 km • Automática</p>
+                <div class="price">$24.990.000</div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
