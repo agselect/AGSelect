@@ -43,7 +43,7 @@
     </main>
 
     <script>
-        // 1. PEGA AQUÍ TU ENLACE CSV DE GOOGLE SHEETS
+        // Tu enlace CSV de Google Sheets
         const urlGoogleSheet = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSoyaqfVzpHqZcc7bGS9zjS-ROjubr2PClpRQLB3qVKTlaYSdyvEfSTaRV9GXRaMyo4APnw2mSHmsFN/pub?output=csv";
 
         function cargarAutos() {
@@ -59,22 +59,22 @@
                         // Verifica que la fila tenga al menos la marca y el precio
                         if(auto["Marca/Modelo"] && auto["Precio (CLP)"]) {
                             
-                            // Truco para convertir el enlace de Drive en una imagen visible
-                            let urlImagen = "https://via.placeholder.com/400x250?text=Sin+Imagen";
+                            // Imagen por defecto más estable si la fila no tiene foto
+                            let urlImagen = "https://placehold.co/400x250/eeeeee/999999?text=Sin+Imagen";
                             const fotoDrive = auto["Foto 1"];
                             
-                            if (fotoDrive) {
+                            if (fotoDrive && fotoDrive.trim() !== "") {
                                 // Esta fórmula extrae el ID oculto del enlace de Drive
                                 const match = fotoDrive.match(/[-\w]{25,}/);
                                 if (match) {
-                                    urlImagen = `https://drive.google.com/uc?export=view&id=${match[0]}`;
+                                    // Nuevo método antibloqueo: usar el endpoint de thumbnail de Google
+                                    urlImagen = `https://drive.google.com/thumbnail?id=${match[0]}&sz=w800`;
                                 }
                             }
 
                             const tarjeta = document.createElement('div');
                             tarjeta.className = 'card';
                             
-                            // Se construye la tarjeta usando los nombres EXACTOS de tus columnas
                             tarjeta.innerHTML = `
                                 <img src="${urlImagen}" alt="${auto["Marca/Modelo"]}">
                                 <div class="card-body">
