@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tu Automotora - Prototipo</title>
+    <title>Automotora - Catálogo Automático</title>
+    <!-- Librería externa que lee el Excel automáticamente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
         body { background-color: #f8f9fa; color: #333; }
@@ -14,11 +16,12 @@
         .hero h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
         .hero p { color: #666; margin-bottom: 1.5rem; }
         .btn { display: inline-block; background: #000; color: #fff; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: bold; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; padding: 0 1rem; margin-bottom: 3rem; }
         .card { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #eee; }
-        .card img { width: 100%; height: 200px; object-fit: cover; }
+        .card img { width: 100%; height: 200px; object-fit: cover; background: #eee; }
         .card-body { padding: 1rem; }
         .price { font-size: 1.25rem; font-weight: bold; color: #111; margin-top: 0.5rem; }
+        .loading { text-align: center; padding: 2rem; color: #666; grid-column: 1 / -1; }
     </style>
 </head>
 <body>
@@ -27,23 +30,62 @@
         <nav>
             <a href="#">Inicio</a>
             <a href="#">Stock</a>
-            <a href="#">Contacto</a>
         </nav>
     </header>
+    
     <section class="hero">
         <h1>Tu próximo auto lo encuentras acá</h1>
-        <p>Compramos y vendemos vehículos de forma simple y segura.</p>
-        <a href="https://wa.me/56912345678" class="btn">Contactar por WhatsApp</a>
+        <p>Catálogo actualizado en tiempo real.</p>
     </section>
-    <main class="grid">
-        <div class="card">
-            <img src="https://via.placeholder.com/400x250" alt="Auto">
-            <div class="card-body">
-                <h3>Volkswagen Tiguan</h3>
-                <p>2022 • 60.000 km • Automática</p>
-                <div class="price">$24.990.000</div>
-            </div>
-        </div>
+
+    <!-- Aquí se inyectarán los autos mágicamente con el código de abajo -->
+    <main class="grid" id="catalogo">
+        <div class="loading">Cargando vehículos desde Google Sheets...</div>
     </main>
+
+    <script>
+        // 1. PEGA AQUÍ TU ENLACE CSV DE GOOGLE SHEETS
+        const urlGoogleSheet = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSoyaqfVzpHqZcc7bGS9zjS-ROjubr2PClpRQLB3qVKTlaYSdyvEfSTaRV9GXRaMyo4APnw2mSHmsFN/pub?output=csv";
+
+        // 2. Función que lee los datos y crea las tarjetas en la página
+        function cargarAutos() {
+            Papa.parse(urlGoogleSheet, {
+                download: true,
+                header: true, // Le dice que la fila 1 tiene los nombres de las columnas
+                complete: function(results) {
+                    const datos = results.data;
+                    const contenedor = document.getElementById('catalogo');
+                    contenedor.innerHTML = ''; // Borra el mensaje de "Cargando..."
+
+                    // Por cada auto en tu Excel, crea una tarjeta
+                    datos.forEach(auto => {
+                        // Se asegura de que la fila no esté vacía
+                        if(auto.Marca && auto.Modelo) {
+                            const tarjeta = document.createElement('div');
+                            tarjeta.className = 'card';
+                            
+                            // Formatea los datos (agrega puntos al precio, etc)
+                            const precioFormateado = Number(auto.Precio).toLocaleString('es-CL');
+                            
+                            // Estructura visual de la tarjeta
+                            tarjeta.innerHTML = `
+                                <img src="${auto.Imagen}" alt="${auto.Marca} ${auto.Modelo}">
+                                <div class="card-body">
+                                    <h3>${auto.Marca} ${auto.Modelo}</h3>
+                                    <p>${auto.Ano} • ${auto.Kilometros} km • ${auto.Transmision}</p>
+                                    <div class="price">$${precioFormateado}</div>
+                                    <a href="https://wa.me/56912345678?text=Hola, me interesa el ${auto.Marca} ${auto.Modelo}" class="btn" style="margin-top: 1rem; display: block; text-align: center; font-size: 0.9rem;">Me interesa</a>
+                                </div>
+                            `;
+                            contenedor.appendChild(tarjeta);
+                        }
+                    });
+                }
+            });
+        }
+
+        // Ejecuta la función apenas abre la página
+        cargarAutos();
+    </script>
 </body>
 </html>
