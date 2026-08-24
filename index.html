@@ -16,12 +16,41 @@
         .hero p { color: #666; margin-bottom: 1.5rem; }
         .btn { display: inline-block; background: #000; color: #fff; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: bold; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; padding: 0 1rem; margin-bottom: 3rem; }
-        .card { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #eee; }
-        .card img { width: 100%; height: 250px; object-fit: cover; background: #eaeaea; }
-        .card-body { padding: 1.2rem; }
-        .badge { display: inline-block; background: #eee; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; margin-bottom: 0.5rem;}
+        .card { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #eee; display: flex; flex-direction: column; }
+        
+        /* --- ESTILOS DEL CARRUSEL --- */
+        .carousel { position: relative; width: 100%; height: 250px; background: #eaeaea; cursor: pointer; overflow: hidden; }
+        .carousel img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+        .carousel:hover img { transform: scale(1.03); } /* Pequeño zoom al pasar el mouse */
+        
+        .carousel-btn { 
+            position: absolute; top: 50%; transform: translateY(-50%); 
+            background: rgba(0,0,0,0.6); color: white; border: none; 
+            padding: 0.8rem 0.5rem; cursor: pointer; opacity: 0; /* Ocultos por defecto */
+            transition: opacity 0.3s; font-size: 1.2rem; z-index: 2; border-radius: 4px;
+        }
+        .carousel:hover .carousel-btn { opacity: 1; } /* Aparecen al poner el mouse */
+        .carousel-btn:hover { background: rgba(0,0,0,0.9); }
+        .prev-btn { left: 5px; }
+        .next-btn { right: 5px; }
+        .contador-fotos { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; z-index: 2; pointer-events: none;}
+        /* --------------------------- */
+
+        .card-body { padding: 1.2rem; flex-grow: 1; display: flex; flex-direction: column; }
+        .badge { display: inline-block; background: #eee; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; margin-bottom: 0.5rem; margin-right: 0.2rem;}
         .price { font-size: 1.5rem; font-weight: bold; color: #111; margin: 0.5rem 0; }
         .loading { text-align: center; padding: 2rem; color: #666; grid-column: 1 / -1; }
+        
+        /* --- ESTILOS DEL LIGHTBOX (IMAGEN AMPLIADA) --- */
+        .lightbox { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.9); display: none; justify-content: center; 
+            align-items: center; z-index: 1000; padding: 2rem;
+        }
+        .lightbox img { max-width: 100%; max-height: 90vh; border-radius: 8px; box-shadow: 0 5px 25px rgba(0,0,0,0.5); }
+        .close-lightbox { position: absolute; top: 20px; right: 30px; color: white; font-size: 3rem; cursor: pointer; font-weight: bold; }
+        .close-lightbox:hover { color: #ccc; }
+        /* ---------------------------------------------- */
     </style>
 </head>
 <body>
@@ -42,9 +71,51 @@
         <div class="loading">Cargando vehículos...</div>
     </main>
 
+    <!-- HTML de la ventana emergente para ver la foto en grande -->
+    <div id="lightbox" class="lightbox" onclick="cerrarLightbox()">
+        <span class="close-lightbox" onclick="cerrarLightbox()">&times;</span>
+        <img id="lightbox-img" src="" alt="Vehículo ampliado" onclick="event.stopPropagation()"> <!-- Evita que se cierre si clickeas la foto -->
+    </div>
+
     <script>
-        // Tu enlace CSV de Google Sheets
         const urlGoogleSheet = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSoyaqfVzpHqZcc7bGS9zjS-ROjubr2PClpRQLB3qVKTlaYSdyvEfSTaRV9GXRaMyo4APnw2mSHmsFN/pub?output=csv";
+
+        // Variables globales para manejar las fotos de todos los autos
+        window.galeriasAutos = {}; 
+        window.indicesAutos = {};
+
+        // Funciones para manejar el carrusel
+        window.cambiarFoto = function(event, autoId, direccion) {
+            event.stopPropagation(); // Evita que se abra el lightbox al apretar la flecha
+            
+            let fotos = window.galeriasAutos[autoId];
+            let indexActual = window.indicesAutos[autoId];
+            
+            indexActual += direccion;
+            
+            // Si llega al final, vuelve al principio y viceversa
+            if (indexActual >= fotos.length) indexActual = 0;
+            if (indexActual < 0) indexActual = fotos.length - 1;
+            
+            window.indicesAutos[autoId] = indexActual;
+            
+            // Actualiza la imagen y el contador
+            document.getElementById(`img-${autoId}`).src = fotos[indexActual];
+            document.getElementById(`contador-${autoId}`).innerText = `${indexActual + 1}/${fotos.length}`;
+        };
+
+        // Funciones para el Lightbox
+        window.abrirLightbox = function(autoId) {
+            let indexActual = window.indicesAutos[autoId];
+            let urlFotoActual = window.galeriasAutos[autoId][indexActual];
+            
+            document.getElementById('lightbox-img').src = urlFotoActual;
+            document.getElementById('lightbox').style.display = 'flex';
+        };
+
+        window.cerrarLightbox = function() {
+            document.getElementById('lightbox').style.display = 'none';
+        };
 
         function cargarAutos() {
             Papa.parse(urlGoogleSheet, {
@@ -55,37 +126,63 @@
                     const contenedor = document.getElementById('catalogo');
                     contenedor.innerHTML = ''; 
 
-                    datos.forEach(auto => {
-                        // Verifica que la fila tenga al menos la marca y el precio
+                    datos.forEach((auto, idIndex) => {
                         if(auto["Marca/Modelo"] && auto["Precio (CLP)"]) {
                             
-                            // Imagen por defecto más estable si la fila no tiene foto
-                            let urlImagen = "https://placehold.co/400x250/eeeeee/999999?text=Sin+Imagen";
-                            const fotoDrive = auto["Foto 1"];
-                            
-                            if (fotoDrive && fotoDrive.trim() !== "") {
-                                // Esta fórmula extrae el ID oculto del enlace de Drive
-                                const match = fotoDrive.match(/[-\w]{25,}/);
-                                if (match) {
-                                    // Nuevo método antibloqueo: usar el endpoint de thumbnail de Google
-                                    urlImagen = `https://drive.google.com/thumbnail?id=${match[0]}&sz=w800`;
+                            // 1. Recopilar todas las fotos del auto (de Foto 1 a Foto 12)
+                            let fotosDelAuto = [];
+                            for(let i = 1; i <= 12; i++) {
+                                let fotoDrive = auto[`Foto ${i}`];
+                                if (fotoDrive && fotoDrive.trim() !== "") {
+                                    const match = fotoDrive.match(/[-\w]{25,}/);
+                                    if (match) {
+                                        // Aumenté el tamaño a w1000 para que se vea excelente en el lightbox
+                                        fotosDelAuto.push(`https://drive.google.com/thumbnail?id=${match[0]}&sz=w1000`);
+                                    }
                                 }
                             }
+
+                            // Si no hay fotos, ponemos la de relleno
+                            if (fotosDelAuto.length === 0) {
+                                fotosDelAuto.push("https://placehold.co/800x500/eeeeee/999999?text=Sin+Imagen");
+                            }
+
+                            // Guardamos las fotos en las variables globales usando un ID único (idIndex)
+                            window.galeriasAutos[idIndex] = fotosDelAuto;
+                            window.indicesAutos[idIndex] = 0;
 
                             const tarjeta = document.createElement('div');
                             tarjeta.className = 'card';
                             
+                            // 2. Construir el carrusel condicionalmente (si tiene más de 1 foto)
+                            let htmlCarrusel = `
+                                <div class="carousel" onclick="abrirLightbox(${idIndex})">
+                                    <img id="img-${idIndex}" src="${fotosDelAuto[0]}" alt="${auto["Marca/Modelo"]}">
+                            `;
+                            
+                            if (fotosDelAuto.length > 1) {
+                                htmlCarrusel += `
+                                    <button class="carousel-btn prev-btn" onclick="cambiarFoto(event, ${idIndex}, -1)">&#10094;</button>
+                                    <button class="carousel-btn next-btn" onclick="cambiarFoto(event, ${idIndex}, 1)">&#10095;</button>
+                                    <div class="contador-fotos" id="contador-${idIndex}">1/${fotosDelAuto.length}</div>
+                                `;
+                            }
+                            htmlCarrusel += `</div>`;
+                            
+                            // 3. Insertar todo en la tarjeta
                             tarjeta.innerHTML = `
-                                <img src="${urlImagen}" alt="${auto["Marca/Modelo"]}">
+                                ${htmlCarrusel}
                                 <div class="card-body">
-                                    <span class="badge">${auto["Año"]}</span>
-                                    <span class="badge">${auto["Transmisión"]}</span>
-                                    <span class="badge">${auto["Bencina/Diesel"]}</span>
+                                    <div>
+                                        <span class="badge">${auto["Año"]}</span>
+                                        <span class="badge">${auto["Transmisión"]}</span>
+                                        <span class="badge">${auto["Bencina/Diesel"]}</span>
+                                    </div>
                                     
                                     <h3 style="margin-top: 0.5rem;">${auto["Marca/Modelo"]}</h3>
                                     <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">${auto["Descripción"]} • ${auto["Kilometraje ($)"]} km</p>
                                     
-                                    <div class="price">$${auto["Precio (CLP)"]}</div>
+                                    <div class="price" style="margin-top: auto;">$${auto["Precio (CLP)"]}</div>
                                     
                                     <a href="https://wa.me/56963033129?text=Hola, me interesa el ${auto["Marca/Modelo"]}" class="btn" style="margin-top: 1rem; display: block; text-align: center; font-size: 0.95rem;">Me interesa</a>
                                 </div>
