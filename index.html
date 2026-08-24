@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Automotora - Catálogo Automático</title>
-    <!-- Librería externa que lee el Excel automáticamente -->
+    <title>Automotora - Catálogo</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
@@ -18,9 +17,10 @@
         .btn { display: inline-block; background: #000; color: #fff; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: bold; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; padding: 0 1rem; margin-bottom: 3rem; }
         .card { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #eee; }
-        .card img { width: 100%; height: 200px; object-fit: cover; background: #eee; }
-        .card-body { padding: 1rem; }
-        .price { font-size: 1.25rem; font-weight: bold; color: #111; margin-top: 0.5rem; }
+        .card img { width: 100%; height: 250px; object-fit: cover; background: #eaeaea; }
+        .card-body { padding: 1.2rem; }
+        .badge { display: inline-block; background: #eee; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; margin-bottom: 0.5rem;}
+        .price { font-size: 1.5rem; font-weight: bold; color: #111; margin: 0.5rem 0; }
         .loading { text-align: center; padding: 2rem; color: #666; grid-column: 1 / -1; }
     </style>
 </head>
@@ -38,43 +38,56 @@
         <p>Catálogo actualizado en tiempo real.</p>
     </section>
 
-    <!-- Aquí se inyectarán los autos mágicamente con el código de abajo -->
     <main class="grid" id="catalogo">
-        <div class="loading">Cargando vehículos desde Google Sheets...</div>
+        <div class="loading">Cargando vehículos...</div>
     </main>
 
     <script>
         // 1. PEGA AQUÍ TU ENLACE CSV DE GOOGLE SHEETS
         const urlGoogleSheet = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSoyaqfVzpHqZcc7bGS9zjS-ROjubr2PClpRQLB3qVKTlaYSdyvEfSTaRV9GXRaMyo4APnw2mSHmsFN/pub?output=csv";
 
-        // 2. Función que lee los datos y crea las tarjetas en la página
         function cargarAutos() {
             Papa.parse(urlGoogleSheet, {
                 download: true,
-                header: true, // Le dice que la fila 1 tiene los nombres de las columnas
+                header: true,
                 complete: function(results) {
                     const datos = results.data;
                     const contenedor = document.getElementById('catalogo');
-                    contenedor.innerHTML = ''; // Borra el mensaje de "Cargando..."
+                    contenedor.innerHTML = ''; 
 
-                    // Por cada auto en tu Excel, crea una tarjeta
                     datos.forEach(auto => {
-                        // Se asegura de que la fila no esté vacía
-                        if(auto.Marca && auto.Modelo) {
+                        // Verifica que la fila tenga al menos la marca y el precio
+                        if(auto["Marca/Modelo"] && auto["Precio (CLP)"]) {
+                            
+                            // Truco para convertir el enlace de Drive en una imagen visible
+                            let urlImagen = "https://via.placeholder.com/400x250?text=Sin+Imagen";
+                            const fotoDrive = auto["Foto 1"];
+                            
+                            if (fotoDrive) {
+                                // Esta fórmula extrae el ID oculto del enlace de Drive
+                                const match = fotoDrive.match(/[-\w]{25,}/);
+                                if (match) {
+                                    urlImagen = `https://drive.google.com/uc?export=view&id=${match[0]}`;
+                                }
+                            }
+
                             const tarjeta = document.createElement('div');
                             tarjeta.className = 'card';
                             
-                            // Formatea los datos (agrega puntos al precio, etc)
-                            const precioFormateado = Number(auto.Precio).toLocaleString('es-CL');
-                            
-                            // Estructura visual de la tarjeta
+                            // Se construye la tarjeta usando los nombres EXACTOS de tus columnas
                             tarjeta.innerHTML = `
-                                <img src="${auto.Imagen}" alt="${auto.Marca} ${auto.Modelo}">
+                                <img src="${urlImagen}" alt="${auto["Marca/Modelo"]}">
                                 <div class="card-body">
-                                    <h3>${auto.Marca} ${auto.Modelo}</h3>
-                                    <p>${auto.Ano} • ${auto.Kilometros} km • ${auto.Transmision}</p>
-                                    <div class="price">$${precioFormateado}</div>
-                                    <a href="https://wa.me/56912345678?text=Hola, me interesa el ${auto.Marca} ${auto.Modelo}" class="btn" style="margin-top: 1rem; display: block; text-align: center; font-size: 0.9rem;">Me interesa</a>
+                                    <span class="badge">${auto["Año"]}</span>
+                                    <span class="badge">${auto["Transmisión"]}</span>
+                                    <span class="badge">${auto["Bencina/Diesel"]}</span>
+                                    
+                                    <h3 style="margin-top: 0.5rem;">${auto["Marca/Modelo"]}</h3>
+                                    <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">${auto["Descripción"]} • ${auto["Kilometraje ($)"]} km</p>
+                                    
+                                    <div class="price">$${auto["Precio (CLP)"]}</div>
+                                    
+                                    <a href="https://wa.me/56912345678?text=Hola, me interesa el ${auto["Marca/Modelo"]}" class="btn" style="margin-top: 1rem; display: block; text-align: center; font-size: 0.95rem;">Me interesa</a>
                                 </div>
                             `;
                             contenedor.appendChild(tarjeta);
@@ -84,7 +97,6 @@
             });
         }
 
-        // Ejecuta la función apenas abre la página
         cargarAutos();
     </script>
 </body>
