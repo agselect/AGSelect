@@ -20,16 +20,17 @@
         
         /* --- ESTILOS DEL CARRUSEL --- */
         .carousel { position: relative; width: 100%; height: 250px; background: #eaeaea; cursor: pointer; overflow: hidden; }
-        .carousel img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
-        .carousel:hover img { transform: scale(1.03); } /* Pequeño zoom al pasar el mouse */
+        /* "object-fit: contain" asegura que la imagen vertical se vea completa sin cortarse */
+        .carousel img { width: 100%; height: 100%; object-fit: contain; transition: transform 0.3s ease; }
+        .carousel:hover img { transform: scale(1.03); } 
         
         .carousel-btn { 
             position: absolute; top: 50%; transform: translateY(-50%); 
             background: rgba(0,0,0,0.6); color: white; border: none; 
-            padding: 0.8rem 0.5rem; cursor: pointer; opacity: 0; /* Ocultos por defecto */
+            padding: 0.8rem 0.5rem; cursor: pointer; opacity: 0; 
             transition: opacity 0.3s; font-size: 1.2rem; z-index: 2; border-radius: 4px;
         }
-        .carousel:hover .carousel-btn { opacity: 1; } /* Aparecen al poner el mouse */
+        .carousel:hover .carousel-btn { opacity: 1; } 
         .carousel-btn:hover { background: rgba(0,0,0,0.9); }
         .prev-btn { left: 5px; }
         .next-btn { right: 5px; }
@@ -44,12 +45,25 @@
         /* --- ESTILOS DEL LIGHTBOX (IMAGEN AMPLIADA) --- */
         .lightbox { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.9); display: none; justify-content: center; 
-            align-items: center; z-index: 1000; padding: 2rem;
+            background: rgba(0,0,0,0.95); display: none; justify-content: center; 
+            align-items: center; flex-direction: column; z-index: 1000; padding: 1rem;
         }
-        .lightbox img { max-width: 100%; max-height: 90vh; border-radius: 8px; box-shadow: 0 5px 25px rgba(0,0,0,0.5); }
-        .close-lightbox { position: absolute; top: 20px; right: 30px; color: white; font-size: 3rem; cursor: pointer; font-weight: bold; }
+        /* Contenedor relativo para que las flechas queden a los lados de la pantalla */
+        .lightbox-content { position: relative; width: 100%; height: 85vh; display: flex; justify-content: center; align-items: center; }
+        /* "contain" hace que ninguna foto ampliada se corte */
+        .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; box-shadow: 0 5px 25px rgba(0,0,0,0.5); }
+        .close-lightbox { position: absolute; top: 15px; right: 25px; color: white; font-size: 3rem; cursor: pointer; font-weight: bold; z-index: 1001; }
         .close-lightbox:hover { color: #ccc; }
+        
+        .lightbox-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(255,255,255,0.1); color: white; border: none;
+            padding: 1rem 1.5rem; cursor: pointer; font-size: 2rem; z-index: 1001; border-radius: 8px; transition: background 0.3s;
+        }
+        .lightbox-btn:hover { background: rgba(255,255,255,0.3); }
+        .lb-prev { left: 10px; }
+        .lb-next { right: 10px; }
+        .lb-counter { color: white; margin-top: 15px; font-size: 1.2rem; }
         /* ---------------------------------------------- */
     </style>
 </head>
@@ -71,51 +85,91 @@
         <div class="loading">Cargando vehículos...</div>
     </main>
 
-    <!-- HTML de la ventana emergente para ver la foto en grande -->
+    <!-- HTML del Lightbox (Ventana grande) -->
     <div id="lightbox" class="lightbox" onclick="cerrarLightbox()">
         <span class="close-lightbox" onclick="cerrarLightbox()">&times;</span>
-        <img id="lightbox-img" src="" alt="Vehículo ampliado" onclick="event.stopPropagation()"> <!-- Evita que se cierre si clickeas la foto -->
+        
+        <div class="lightbox-content">
+            <button id="btn-lb-prev" class="lightbox-btn lb-prev" onclick="cambiarFotoLightbox(event, -1)">&#10094;</button>
+            <img id="lightbox-img" src="" alt="Vehículo ampliado" onclick="event.stopPropagation()">
+            <button id="btn-lb-next" class="lightbox-btn lb-next" onclick="cambiarFotoLightbox(event, 1)">&#10095;</button>
+        </div>
+        
+        <div id="lightbox-counter" class="lb-counter"></div>
     </div>
 
     <script>
         const urlGoogleSheet = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSoyaqfVzpHqZcc7bGS9zjS-ROjubr2PClpRQLB3qVKTlaYSdyvEfSTaRV9GXRaMyo4APnw2mSHmsFN/pub?output=csv";
 
-        // Variables globales para manejar las fotos de todos los autos
+        // Variables globales
         window.galeriasAutos = {}; 
         window.indicesAutos = {};
+        window.autoActualLightbox = null; // Saber qué auto está abierto en grande
 
-        // Funciones para manejar el carrusel
+        // Carrusel en la tarjeta pequeña
         window.cambiarFoto = function(event, autoId, direccion) {
-            event.stopPropagation(); // Evita que se abra el lightbox al apretar la flecha
+            event.stopPropagation(); 
             
             let fotos = window.galeriasAutos[autoId];
             let indexActual = window.indicesAutos[autoId];
             
             indexActual += direccion;
-            
-            // Si llega al final, vuelve al principio y viceversa
             if (indexActual >= fotos.length) indexActual = 0;
             if (indexActual < 0) indexActual = fotos.length - 1;
             
             window.indicesAutos[autoId] = indexActual;
-            
-            // Actualiza la imagen y el contador
             document.getElementById(`img-${autoId}`).src = fotos[indexActual];
             document.getElementById(`contador-${autoId}`).innerText = `${indexActual + 1}/${fotos.length}`;
         };
 
-        // Funciones para el Lightbox
+        // --- Funciones del Lightbox ---
         window.abrirLightbox = function(autoId) {
-            let indexActual = window.indicesAutos[autoId];
-            let urlFotoActual = window.galeriasAutos[autoId][indexActual];
-            
-            document.getElementById('lightbox-img').src = urlFotoActual;
+            window.autoActualLightbox = autoId;
+            actualizarVistaLightbox();
             document.getElementById('lightbox').style.display = 'flex';
         };
 
         window.cerrarLightbox = function() {
             document.getElementById('lightbox').style.display = 'none';
         };
+
+        // Cambiar foto estando en el Lightbox
+        window.cambiarFotoLightbox = function(event, direccion) {
+            event.stopPropagation();
+            
+            let autoId = window.autoActualLightbox;
+            let fotos = window.galeriasAutos[autoId];
+            let indexActual = window.indicesAutos[autoId];
+            
+            indexActual += direccion;
+            if (indexActual >= fotos.length) indexActual = 0;
+            if (indexActual < 0) indexActual = fotos.length - 1;
+            
+            window.indicesAutos[autoId] = indexActual;
+            
+            // Sincronizar también la foto en la tarjeta que está por detrás
+            document.getElementById(`img-${autoId}`).src = fotos[indexActual];
+            let contadorTarjeta = document.getElementById(`contador-${autoId}`);
+            if(contadorTarjeta) contadorTarjeta.innerText = `${indexActual + 1}/${fotos.length}`;
+            
+            actualizarVistaLightbox();
+        };
+
+        // Refrescar qué foto y números muestra el Lightbox
+        window.actualizarVistaLightbox = function() {
+            let autoId = window.autoActualLightbox;
+            let indexActual = window.indicesAutos[autoId];
+            let fotos = window.galeriasAutos[autoId];
+            
+            document.getElementById('lightbox-img').src = fotos[indexActual];
+            document.getElementById('lightbox-counter').innerText = `${indexActual + 1} / ${fotos.length}`;
+            
+            // Si el auto solo tiene 1 foto, escondemos las flechas del Lightbox
+            let displayFlechas = fotos.length > 1 ? 'block' : 'none';
+            document.getElementById('btn-lb-prev').style.display = displayFlechas;
+            document.getElementById('btn-lb-next').style.display = displayFlechas;
+        };
+        // ------------------------------
 
         function cargarAutos() {
             Papa.parse(urlGoogleSheet, {
@@ -129,32 +183,27 @@
                     datos.forEach((auto, idIndex) => {
                         if(auto["Marca/Modelo"] && auto["Precio (CLP)"]) {
                             
-                            // 1. Recopilar todas las fotos del auto (de Foto 1 a Foto 12)
                             let fotosDelAuto = [];
-                            for(let i = 1; i <= 12; i++) {
+                            for(let i = 1; i <= 9; i++) {
                                 let fotoDrive = auto[`Foto ${i}`];
                                 if (fotoDrive && fotoDrive.trim() !== "") {
                                     const match = fotoDrive.match(/[-\w]{25,}/);
                                     if (match) {
-                                        // Aumenté el tamaño a w1000 para que se vea excelente en el lightbox
                                         fotosDelAuto.push(`https://drive.google.com/thumbnail?id=${match[0]}&sz=w1000`);
                                     }
                                 }
                             }
 
-                            // Si no hay fotos, ponemos la de relleno
                             if (fotosDelAuto.length === 0) {
                                 fotosDelAuto.push("https://placehold.co/800x500/eeeeee/999999?text=Sin+Imagen");
                             }
 
-                            // Guardamos las fotos en las variables globales usando un ID único (idIndex)
                             window.galeriasAutos[idIndex] = fotosDelAuto;
                             window.indicesAutos[idIndex] = 0;
 
                             const tarjeta = document.createElement('div');
                             tarjeta.className = 'card';
                             
-                            // 2. Construir el carrusel condicionalmente (si tiene más de 1 foto)
                             let htmlCarrusel = `
                                 <div class="carousel" onclick="abrirLightbox(${idIndex})">
                                     <img id="img-${idIndex}" src="${fotosDelAuto[0]}" alt="${auto["Marca/Modelo"]}">
@@ -169,7 +218,6 @@
                             }
                             htmlCarrusel += `</div>`;
                             
-                            // 3. Insertar todo en la tarjeta
                             tarjeta.innerHTML = `
                                 ${htmlCarrusel}
                                 <div class="card-body">
