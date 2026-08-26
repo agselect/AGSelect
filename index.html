@@ -9,9 +9,9 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
         body { background-color: #f8f9fa; color: #333; }
         
-        /* --- CABECERA Y LOGO (AGRANDADO) --- */
-        header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #fff; border-bottom: 1px solid #eee; }
-        .logo img { max-height: 75px; width: auto; object-fit: contain; display: block; }
+        /* --- CABECERA Y LOGO (TRIPLICADO) --- */
+        header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; background: #fff; border-bottom: 1px solid #eee; }
+        .logo img { max-height: 225px; width: auto; object-fit: contain; display: block; }
         nav a { margin-left: 1rem; text-decoration: none; color: #555; font-weight: 500; }
         
         /* --- SECCIÓN PRINCIPAL (HERO) --- */
@@ -32,7 +32,7 @@
         .filtros-wrapper { max-width: 1100px; margin: 0 auto 1.5rem auto; padding: 0 1rem; }
         .filtros-card { background: #fff; padding: 1.2rem; border-radius: 8px; border: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; }
         .filtro-grupo { display: flex; flex-wrap: wrap; gap: 0.8rem; flex-grow: 1; }
-        .filtro-control { flex: 1; min-width: 160px; }
+        .filtro-control { flex: 1; min-width: 140px; }
         .filtro-control label { display: block; font-size: 0.8rem; font-weight: bold; color: #666; margin-bottom: 0.3rem; text-transform: uppercase; }
         .filtro-control input, .filtro-control select { 
             width: 100%; padding: 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem; background: #fff; outline: none;
@@ -65,7 +65,7 @@
         .price { font-size: 1.5rem; font-weight: bold; color: #111; margin: 0.5rem 0; }
         .loading { text-align: center; padding: 3rem; color: #666; grid-column: 1 / -1; font-size: 1.1rem; }
         
-        /* --- ESTILOS DEL LIGHTBOX (VISTA AMPLIADA) --- */
+        /* --- ESTILOS DEL LIGHTBOX --- */
         .lightbox { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.95); display: none; justify-content: center; 
@@ -125,9 +125,19 @@
                     <input type="text" id="buscarMarca" placeholder="Ej: Mercedes, Peugeot..." oninput="filtrarYOrdenar()">
                 </div>
                 <div class="filtro-control">
+                    <label for="precioMin">Precio Mín ($)</label>
+                    <input type="number" id="precioMin" placeholder="Ej: 5000000" oninput="filtrarYOrdenar()">
+                </div>
+                <div class="filtro-control">
+                    <label for="precioMax">Precio Máx ($)</label>
+                    <input type="number" id="precioMax" placeholder="Ej: 20000000" oninput="filtrarYOrdenar()">
+                </div>
+                <div class="filtro-control">
                     <label for="filtroTransmision">Transmisión</label>
                     <select id="filtroTransmision" onchange="filtrarYOrdenar()">
                         <option value="todos">Todas</option>
+                        <option value="automatica">Automática</option>
+                        <option value="mecanica">Mecánica</option>
                     </select>
                 </div>
                 <div class="filtro-control">
@@ -138,7 +148,7 @@
                 </div>
             </div>
             
-            <div class="filtro-control" style="max-width: 220px;">
+            <div class="filtro-control" style="min-width: 170px;">
                 <label for="ordenarPor">Ordenar por</label>
                 <select id="ordenarPor" onchange="filtrarYOrdenar()">
                     <option value="defecto">Destacados</option>
@@ -156,42 +166,34 @@
         <div class="loading">Cargando catálogo de vehículos...</div>
     </main>
 
-    <!-- Lightbox (Ventana grande) -->
+    <!-- Lightbox -->
     <div id="lightbox" class="lightbox" onclick="cerrarLightbox()">
         <span class="close-lightbox" onclick="cerrarLightbox()">&times;</span>
-        
         <div class="lightbox-content">
             <button id="btn-lb-prev" class="lightbox-btn lb-prev" onclick="cambiarFotoLightbox(event, -1)">&#10094;</button>
             <img id="lightbox-img" src="" alt="Vehículo ampliado" onclick="event.stopPropagation()">
             <button id="btn-lb-next" class="lightbox-btn lb-next" onclick="cambiarFotoLightbox(event, 1)">&#10095;</button>
         </div>
-        
         <div id="lightbox-counter" class="lb-counter"></div>
     </div>
 
     <script>
         const urlGoogleSheet = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSoyaqfVzpHqZcc7bGS9zjS-ROjubr2PClpRQLB3qVKTlaYSdyvEfSTaRV9GXRaMyo4APnw2mSHmsFN/pub?output=csv";
 
-        // Variables globales
         window.todosLosAutos = [];
         window.galeriasAutos = {}; 
         window.indicesAutos = {};
         window.autoActualLightbox = null; 
 
-        // Auxiliar para limpiar números (precios, kilómetros, años)
         function parseNumero(val) {
             if (!val) return 0;
             return parseInt(val.toString().replace(/\D/g, '')) || 0;
         }
 
-        // Carrusel en la tarjeta pequeña
         window.cambiarFoto = function(event, autoId, direccion) {
             if (event && event.stopPropagation) event.stopPropagation(); 
-            
             let fotos = window.galeriasAutos[autoId];
-            let indexActual = window.indicesAutos[autoId];
-            
-            indexActual += direccion;
+            let indexActual = window.indicesAutos[autoId] + direccion;
             if (indexActual >= fotos.length) indexActual = 0;
             if (indexActual < 0) indexActual = fotos.length - 1;
             
@@ -200,7 +202,6 @@
             document.getElementById(`contador-${autoId}`).innerText = `${indexActual + 1}/${fotos.length}`;
         };
 
-        // --- Funciones del Lightbox ---
         window.abrirLightbox = function(autoId) {
             let cEl = document.getElementById(`carousel-${autoId}`);
             if (cEl && cEl.dataset.swiped === "true") {
@@ -218,17 +219,13 @@
 
         window.cambiarFotoLightbox = function(event, direccion) {
             if (event && event.stopPropagation) event.stopPropagation();
-            
             let autoId = window.autoActualLightbox;
             let fotos = window.galeriasAutos[autoId];
-            let indexActual = window.indicesAutos[autoId];
-            
-            indexActual += direccion;
+            let indexActual = window.indicesAutos[autoId] + direccion;
             if (indexActual >= fotos.length) indexActual = 0;
             if (indexActual < 0) indexActual = fotos.length - 1;
             
             window.indicesAutos[autoId] = indexActual;
-            
             document.getElementById(`img-${autoId}`).src = fotos[indexActual];
             let contadorTarjeta = document.getElementById(`contador-${autoId}`);
             if(contadorTarjeta) contadorTarjeta.innerText = `${indexActual + 1}/${fotos.length}`;
@@ -249,7 +246,6 @@
             document.getElementById('btn-lb-next').style.display = displayFlechas;
         };
 
-        // Gestos táctiles en Lightbox
         let lbTouchStartX = 0;
         const lbElement = document.getElementById('lightbox');
         lbElement.addEventListener('touchstart', function(e) { lbTouchStartX = e.changedTouches[0].clientX; }, {passive: true});
@@ -261,25 +257,24 @@
             }
         }, {passive: true});
 
-        // --- LÓGICA DE FILTRADO Y ORDENAMIENTO ---
         function llenarDesplegables(datos) {
-            const transSet = new Set();
             const combSet = new Set();
-
             datos.forEach(auto => {
-                if (auto["Transmisión"] && auto["Transmisión"].trim() !== "") transSet.add(auto["Transmisión"].trim());
                 if (auto["Bencina/Diesel"] && auto["Bencina/Diesel"].trim() !== "") combSet.add(auto["Bencina/Diesel"].trim());
             });
 
-            const selTrans = document.getElementById('filtroTransmision');
-            transSet.forEach(t => { selTrans.innerHTML += `<option value="${t}">${t}</option>`; });
-
             const selComb = document.getElementById('filtroCombustible');
+            selComb.innerHTML = '<option value="todos">Todos</option>';
             combSet.forEach(c => { selComb.innerHTML += `<option value="${c}">${c}</option>`; });
         }
 
         function filtrarYOrdenar() {
             const textoBusqueda = document.getElementById('buscarMarca').value.toLowerCase().trim();
+            const pMinVal = document.getElementById('precioMin').value;
+            const pMaxVal = document.getElementById('precioMax').value;
+            const pMin = pMinVal ? parseNumero(pMinVal) : 0;
+            const pMax = pMaxVal ? parseNumero(pMaxVal) : Infinity;
+
             const transSel = document.getElementById('filtroTransmision').value;
             const combSel = document.getElementById('filtroCombustible').value;
             const ordenSel = document.getElementById('ordenarPor').value;
@@ -290,10 +285,23 @@
                 const desc = (auto["Descripción"] || "").toLowerCase();
                 const coincideTexto = modeloMarca.includes(textoBusqueda) || desc.includes(textoBusqueda);
                 
-                const coincideTrans = (transSel === 'todos') || (auto["Transmisión"] && auto["Transmisión"].trim() === transSel);
+                // Filtro de Precio Rango
+                const precioVal = parseNumero(auto["Precio (CLP)"]);
+                const coincidePrecio = precioVal >= pMin && (pMax === Infinity || precioVal <= pMax);
+
+                // Filtro Transmisión unificado
+                const rawTrans = (auto["Transmisión"] || "").toLowerCase();
+                let coincideTrans = true;
+                if (transSel === 'automatica') {
+                    coincideTrans = rawTrans.includes('auto') || rawTrans.includes('aut');
+                } else if (transSel === 'mecanica') {
+                    coincideTrans = rawTrans.includes('mec') || rawTrans.includes('man');
+                }
+
+                // Combustible
                 const coincideComb = (combSel === 'todos') || (auto["Bencina/Diesel"] && auto["Bencina/Diesel"].trim() === combSel);
 
-                return coincideTexto && coincideTrans && coincideComb;
+                return coincideTexto && coincidePrecio && coincideTrans && coincideComb;
             });
 
             // 2. Ordenar
@@ -310,19 +318,18 @@
                 if (ordenSel === 'km-asc') return kmA - kmB;
                 if (ordenSel === 'km-desc') return kmB - kmA;
                 if (ordenSel === 'ano-desc') return anoB - anoA;
-                return 0; // por defecto mantiene orden del Excel
+                return 0;
             });
 
             renderizarAutos(resultado);
         }
 
-        // --- RENDERIZAR AUTOS EN PANTALLA ---
         function renderizarAutos(autos) {
             const contenedor = document.getElementById('catalogo');
             contenedor.innerHTML = ''; 
 
             if (autos.length === 0) {
-                contenedor.innerHTML = `<div class="loading">No se encontraron vehículos que coincidan con la búsqueda.</div>`;
+                contenedor.innerHTML = `<div class="loading">No se encontraron vehículos que coincidan con los filtros seleccionados.</div>`;
                 return;
             }
 
@@ -366,7 +373,6 @@
                 `;
                 contenedor.appendChild(tarjeta);
 
-                // Asignar Swipe Táctil
                 let cEl = document.getElementById(`carousel-${idIndex}`);
                 let startX = 0;
 
@@ -393,7 +399,6 @@
             });
         }
 
-        // --- CARGAR DATOS DESDE GOOGLE SHEETS ---
         function cargarAutos() {
             Papa.parse(urlGoogleSheet, {
                 download: true,
@@ -404,7 +409,7 @@
 
                     datos.forEach((auto, idIndex) => {
                         if(auto["Marca/Modelo"] && auto["Precio (CLP)"]) {
-                            auto._id = idIndex; // ID único interno
+                            auto._id = idIndex;
                             
                             let fotosDelAuto = [];
                             for(let i = 1; i <= 9; i++) {
