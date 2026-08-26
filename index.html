@@ -9,15 +9,51 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
         body { background-color: #f8f9fa; color: #333; }
         
-        /* --- CABECERA Y LOGO --- */
-        header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; background: #fff; border-bottom: 1px solid #eee; }
-        .logo img { max-height: 225px; width: auto; object-fit: contain; display: block; }
-        nav a { margin-left: 1rem; text-decoration: none; color: #555; font-weight: 500; }
+        /* --- CABECERA FIJA Y LOGO DINÁMICO --- */
+        header { 
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(8px);
+            padding: 1.5rem 2rem; 
+            display: flex; 
+            justify-content: center; /* Centrado inicialmente */
+            align-items: center; 
+            border-bottom: 1px solid #eee; 
+            transition: all 0.4s ease;
+        }
+
+        /* Estado al hacer Scroll: logo se ubica a la izquierda y achica la barra */
+        header.scrolled {
+            padding: 0.6rem 2rem;
+            justify-content: flex-start;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .logo img { 
+            max-height: 180px; 
+            width: auto; 
+            object-fit: contain; 
+            display: block; 
+            transition: max-height 0.4s ease;
+        }
+
+        header.scrolled .logo img {
+            max-height: 55px; /* Tamaño reducido al deslizar */
+        }
         
-        /* --- SECCIÓN PRINCIPAL (HERO) --- */
-        .hero { text-align: center; padding: 2.5rem 1rem; background: #fff; margin-bottom: 1.5rem; }
-        .hero h1 { font-size: 2rem; margin-bottom: 0.8rem; }
-        .hero-desc { color: #555; font-size: 1rem; line-height: 1.6; max-width: 600px; margin: 0 auto 1.5rem auto; }
+        /* --- SECCIÓN PRINCIPAL (HERO) CON IMAGEN DE FONDO --- */
+        .hero { 
+            text-align: center; 
+            padding: 4rem 1rem; 
+            margin-bottom: 2rem; 
+            background: linear-gradient(rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.82)), 
+                        url('https://drive.google.com/thumbnail?id=13-0wFNbG5KIKPUsrMOEQ0fjqimf1bkLy&sz=w2000') center/cover no-repeat;
+            border-bottom: 1px solid #eee;
+        }
+        .hero h1 { font-size: 2.2rem; margin-bottom: 0.8rem; color: #111; }
+        .hero-desc { color: #444; font-size: 1.05rem; line-height: 1.6; max-width: 600px; margin: 0 auto 1.5rem auto; font-weight: 500; }
         
         .btn { display: inline-block; background: #000; color: #fff; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: bold; }
         .btn-disabled { background: #888 !important; color: #fff !important; cursor: not-allowed; pointer-events: none; }
@@ -78,18 +114,18 @@
         .lightbox { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.95); display: none; justify-content: center; 
-            align-items: center; flex-direction: column; z-index: 1000; padding: 1rem;
+            align-items: center; flex-direction: column; z-index: 2000; padding: 1rem;
             touch-action: pan-y;
         }
         .lightbox-content { position: relative; width: 100%; height: 85vh; display: flex; justify-content: center; align-items: center; }
         .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; box-shadow: 0 5px 25px rgba(0,0,0,0.5); user-select: none; }
-        .close-lightbox { position: absolute; top: 15px; right: 25px; color: white; font-size: 3rem; cursor: pointer; font-weight: bold; z-index: 1001; }
+        .close-lightbox { position: absolute; top: 15px; right: 25px; color: white; font-size: 3rem; cursor: pointer; font-weight: bold; z-index: 2001; }
         .close-lightbox:hover { color: #ccc; }
         
         .lightbox-btn {
             position: absolute; top: 50%; transform: translateY(-50%);
             background: rgba(255,255,255,0.1); color: white; border: none;
-            padding: 1rem 1.5rem; cursor: pointer; font-size: 2rem; z-index: 1001; border-radius: 8px; transition: background 0.3s;
+            padding: 1rem 1.5rem; cursor: pointer; font-size: 2rem; z-index: 2001; border-radius: 8px; transition: background 0.3s;
         }
         .lightbox-btn:hover { background: rgba(255,255,255,0.3); }
         .lb-prev { left: 10px; }
@@ -98,14 +134,10 @@
     </style>
 </head>
 <body>
-    <header>
+    <header id="header">
         <div class="logo">
             <img src="https://drive.google.com/thumbnail?id=1ijRH919dI3BznZ6R9YhH22RnBm5srQ-7&sz=w1000" alt="AG Select Automotora">
         </div>
-        <nav>
-            <a href="#">Inicio</a>
-            <a href="#">Stock</a>
-        </nav>
     </header>
     
     <section class="hero">
@@ -202,12 +234,21 @@
         window.indicesAutos = {};
         window.autoActualLightbox = null; 
 
+        // DETECTOR DE SCROLL PARA REDUCIR Y REUBICAR EL LOGO
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            if (window.scrollY > 40) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
         function parseNumero(val) {
             if (!val) return 0;
             return parseInt(val.toString().replace(/\D/g, '')) || 0;
         }
 
-        // Determina si el auto está marcado como Vendido en Google Sheets
         function esAutoVendido(auto) {
             const rawEstado = (
                 auto["Estado"] || 
@@ -310,23 +351,19 @@
             const combSel = document.getElementById('filtroCombustible').value;
             const ordenSel = document.getElementById('ordenarPor').value;
 
-            // 1. Filtrar
             let resultado = window.todosLosAutos.filter(auto => {
                 const modeloMarca = (auto["Marca/Modelo"] || "").toLowerCase();
                 const desc = (auto["Descripción"] || "").toLowerCase();
                 const coincideTexto = modeloMarca.includes(textoBusqueda) || desc.includes(textoBusqueda);
                 
-                // Filtro de Precio
                 const precioVal = parseNumero(auto["Precio (CLP)"]);
                 const coincidePrecio = precioVal >= pMin && (pMax === Infinity || precioVal <= pMax);
 
-                // Filtro Estado (Disponible / Vendido)
                 const vendido = esAutoVendido(auto);
                 let coincideEstado = true;
                 if (estadoSel === 'disponible') coincideEstado = !vendido;
                 else if (estadoSel === 'vendido') coincideEstado = vendido;
 
-                // Transmisión
                 const rawTrans = (auto["Transmisión"] || "").toLowerCase();
                 let coincideTrans = true;
                 if (transSel === 'automatica') {
@@ -335,13 +372,11 @@
                     coincideTrans = rawTrans.includes('mec') || rawTrans.includes('man');
                 }
 
-                // Combustible
                 const coincideComb = (combSel === 'todos') || (auto["Bencina/Diesel"] && auto["Bencina/Diesel"].trim() === combSel);
 
                 return coincideTexto && coincidePrecio && coincideEstado && coincideTrans && coincideComb;
             });
 
-            // 2. Ordenar
             resultado.sort((a, b) => {
                 const precioA = parseNumero(a["Precio (CLP)"]);
                 const precioB = parseNumero(b["Precio (CLP)"]);
