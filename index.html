@@ -8,20 +8,33 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
         body { background-color: #f8f9fa; color: #333; }
-        header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #fff; border-bottom: 1px solid #eee; }
-        .logo { font-weight: bold; font-size: 1.2rem; }
+        
+        /* --- CABECERA Y LOGO --- */
+        header { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 2rem; background: #fff; border-bottom: 1px solid #eee; }
+        .logo img { max-height: 45px; width: auto; object-fit: contain; display: block; }
         nav a { margin-left: 1rem; text-decoration: none; color: #555; }
-        .hero { text-align: center; padding: 4rem 1rem; background: #fff; margin-bottom: 2rem; }
-        .hero h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
-        .hero p { color: #666; margin-bottom: 1.5rem; }
+        
+        /* --- SECCIÓN PRINCIPAL (HERO) --- */
+        .hero { text-align: center; padding: 2.5rem 1rem; background: #fff; margin-bottom: 2rem; }
+        .hero h1 { font-size: 2rem; margin-bottom: 0.8rem; }
+        .hero-desc { color: #555; font-size: 1rem; line-height: 1.6; max-width: 600px; margin: 0 auto 1.5rem auto; }
+        
         .btn { display: inline-block; background: #000; color: #fff; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: bold; }
+        
+        .btn-ig { 
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px; 
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); 
+            color: #fff; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: bold; transition: opacity 0.3s;
+        }
+        .btn-ig:hover { opacity: 0.9; }
+
+        /* --- GRILLA Y TARJETAS --- */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; padding: 0 1rem; margin-bottom: 3rem; }
         .card { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #eee; display: flex; flex-direction: column; }
         
         /* --- ESTILOS DEL CARRUSEL --- */
-        .carousel { position: relative; width: 100%; height: 250px; background: #eaeaea; cursor: pointer; overflow: hidden; }
-        /* "object-fit: contain" asegura que la imagen vertical se vea completa sin cortarse */
-        .carousel img { width: 100%; height: 100%; object-fit: contain; transition: transform 0.3s ease; }
+        .carousel { position: relative; width: 100%; height: 250px; background: #eaeaea; cursor: pointer; overflow: hidden; touch-action: pan-y; }
+        .carousel img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; user-select: none; }
         .carousel:hover img { transform: scale(1.03); } 
         
         .carousel-btn { 
@@ -35,23 +48,21 @@
         .prev-btn { left: 5px; }
         .next-btn { right: 5px; }
         .contador-fotos { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; z-index: 2; pointer-events: none;}
-        /* --------------------------- */
 
         .card-body { padding: 1.2rem; flex-grow: 1; display: flex; flex-direction: column; }
         .badge { display: inline-block; background: #eee; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; margin-bottom: 0.5rem; margin-right: 0.2rem;}
         .price { font-size: 1.5rem; font-weight: bold; color: #111; margin: 0.5rem 0; }
         .loading { text-align: center; padding: 2rem; color: #666; grid-column: 1 / -1; }
         
-        /* --- ESTILOS DEL LIGHTBOX (IMAGEN AMPLIADA) --- */
+        /* --- ESTILOS DEL LIGHTBOX (VISTA AMPLIADA) --- */
         .lightbox { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.95); display: none; justify-content: center; 
             align-items: center; flex-direction: column; z-index: 1000; padding: 1rem;
+            touch-action: pan-y;
         }
-        /* Contenedor relativo para que las flechas queden a los lados de la pantalla */
         .lightbox-content { position: relative; width: 100%; height: 85vh; display: flex; justify-content: center; align-items: center; }
-        /* "contain" hace que ninguna foto ampliada se corte */
-        .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; box-shadow: 0 5px 25px rgba(0,0,0,0.5); }
+        .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; box-shadow: 0 5px 25px rgba(0,0,0,0.5); user-select: none; }
         .close-lightbox { position: absolute; top: 15px; right: 25px; color: white; font-size: 3rem; cursor: pointer; font-weight: bold; z-index: 1001; }
         .close-lightbox:hover { color: #ccc; }
         
@@ -64,12 +75,13 @@
         .lb-prev { left: 10px; }
         .lb-next { right: 10px; }
         .lb-counter { color: white; margin-top: 15px; font-size: 1.2rem; }
-        /* ---------------------------------------------- */
     </style>
 </head>
 <body>
     <header>
-        <div class="logo">TU AUTOMOTORA</div>
+        <div class="logo">
+            <img src="https://drive.google.com/thumbnail?id=1KEp15yYJBbyHchy9R3zQ8w7pgm5W2I6d&sz=w500" alt="AG Select Automotora">
+        </div>
         <nav>
             <a href="#">Inicio</a>
             <a href="#">Stock</a>
@@ -78,14 +90,26 @@
     
     <section class="hero">
         <h1>Tu próximo auto lo encuentras acá</h1>
-        <p>Catálogo actualizado en tiempo real.</p>
+        <div class="hero-desc">
+            <p>Compra - vende o consigna con nosotros de forma segura! 🚘</p>
+            <p>Te asesoramos en todo el proceso.</p>
+            <p>Servicio de Carhunter - encontramos tu próximo auto. 🔍</p>
+        </div>
+        <a href="https://www.instagram.com/agselect_automotora?utm_source=ig_web_button_share_sheet&igsi=ZDNlZDc0MzIxNw==" target="_blank" class="btn-ig">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+            </svg>
+            Síguenos en Instagram
+        </a>
     </section>
 
     <main class="grid" id="catalogo">
         <div class="loading">Cargando vehículos...</div>
     </main>
 
-    <!-- HTML del Lightbox (Ventana grande) -->
+    <!-- Lightbox (Ventana grande) -->
     <div id="lightbox" class="lightbox" onclick="cerrarLightbox()">
         <span class="close-lightbox" onclick="cerrarLightbox()">&times;</span>
         
@@ -104,11 +128,11 @@
         // Variables globales
         window.galeriasAutos = {}; 
         window.indicesAutos = {};
-        window.autoActualLightbox = null; // Saber qué auto está abierto en grande
+        window.autoActualLightbox = null; 
 
         // Carrusel en la tarjeta pequeña
         window.cambiarFoto = function(event, autoId, direccion) {
-            event.stopPropagation(); 
+            if (event && event.stopPropagation) event.stopPropagation(); 
             
             let fotos = window.galeriasAutos[autoId];
             let indexActual = window.indicesAutos[autoId];
@@ -124,6 +148,11 @@
 
         // --- Funciones del Lightbox ---
         window.abrirLightbox = function(autoId) {
+            let cEl = document.getElementById(`carousel-${autoId}`);
+            if (cEl && cEl.dataset.swiped === "true") {
+                cEl.dataset.swiped = "false";
+                return; // Evita abrir la foto si el usuario solo estaba deslizándola
+            }
             window.autoActualLightbox = autoId;
             actualizarVistaLightbox();
             document.getElementById('lightbox').style.display = 'flex';
@@ -133,9 +162,8 @@
             document.getElementById('lightbox').style.display = 'none';
         };
 
-        // Cambiar foto estando en el Lightbox
         window.cambiarFotoLightbox = function(event, direccion) {
-            event.stopPropagation();
+            if (event && event.stopPropagation) event.stopPropagation();
             
             let autoId = window.autoActualLightbox;
             let fotos = window.galeriasAutos[autoId];
@@ -147,7 +175,6 @@
             
             window.indicesAutos[autoId] = indexActual;
             
-            // Sincronizar también la foto en la tarjeta que está por detrás
             document.getElementById(`img-${autoId}`).src = fotos[indexActual];
             let contadorTarjeta = document.getElementById(`contador-${autoId}`);
             if(contadorTarjeta) contadorTarjeta.innerText = `${indexActual + 1}/${fotos.length}`;
@@ -155,7 +182,6 @@
             actualizarVistaLightbox();
         };
 
-        // Refrescar qué foto y números muestra el Lightbox
         window.actualizarVistaLightbox = function() {
             let autoId = window.autoActualLightbox;
             let indexActual = window.indicesAutos[autoId];
@@ -164,13 +190,28 @@
             document.getElementById('lightbox-img').src = fotos[indexActual];
             document.getElementById('lightbox-counter').innerText = `${indexActual + 1} / ${fotos.length}`;
             
-            // Si el auto solo tiene 1 foto, escondemos las flechas del Lightbox
             let displayFlechas = fotos.length > 1 ? 'block' : 'none';
             document.getElementById('btn-lb-prev').style.display = displayFlechas;
             document.getElementById('btn-lb-next').style.display = displayFlechas;
         };
-        // ------------------------------
 
+        // --- Detección de gestos (Swipe táctil en Lightbox) ---
+        let lbTouchStartX = 0;
+        const lbElement = document.getElementById('lightbox');
+        
+        lbElement.addEventListener('touchstart', function(e) {
+            lbTouchStartX = e.changedTouches[0].clientX;
+        }, {passive: true});
+
+        lbElement.addEventListener('touchend', function(e) {
+            let diff = e.changedTouches[0].clientX - lbTouchStartX;
+            if (Math.abs(diff) > 40) {
+                if (diff < 0) cambiarFotoLightbox(e, 1);  // Deslizar a la izquierda -> foto siguiente
+                else cambiarFotoLightbox(e, -1);          // Deslizar a la derecha -> foto anterior
+            }
+        }, {passive: true});
+
+        // --- Cargar Catálogo ---
         function cargarAutos() {
             Papa.parse(urlGoogleSheet, {
                 download: true,
@@ -205,7 +246,7 @@
                             tarjeta.className = 'card';
                             
                             let htmlCarrusel = `
-                                <div class="carousel" onclick="abrirLightbox(${idIndex})">
+                                <div class="carousel" id="carousel-${idIndex}" onclick="abrirLightbox(${idIndex})">
                                     <img id="img-${idIndex}" src="${fotosDelAuto[0]}" alt="${auto["Marca/Modelo"]}">
                             `;
                             
@@ -236,6 +277,31 @@
                                 </div>
                             `;
                             contenedor.appendChild(tarjeta);
+
+                            // --- Detección de swipe táctil en cada carrusel de tarjeta ---
+                            let cEl = document.getElementById(`carousel-${idIndex}`);
+                            let startX = 0;
+
+                            cEl.addEventListener('touchstart', (e) => {
+                                startX = e.touches[0].clientX;
+                                cEl.dataset.swiped = "false";
+                            }, {passive: true});
+
+                            cEl.addEventListener('touchmove', (e) => {
+                                if (Math.abs(e.touches[0].clientX - startX) > 10) {
+                                    cEl.dataset.swiped = "true";
+                                }
+                            }, {passive: true});
+
+                            cEl.addEventListener('touchend', (e) => {
+                                if (cEl.dataset.swiped === "true") {
+                                    let diff = e.changedTouches[0].clientX - startX;
+                                    if (Math.abs(diff) > 35) {
+                                        if (diff < 0) cambiarFoto(e, idIndex, 1);
+                                        else cambiarFoto(e, idIndex, -1);
+                                    }
+                                }
+                            });
                         }
                     });
                 }
