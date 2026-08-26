@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Automotora - Catálogo</title>
+    <title>AG Select Automotora - Catálogo</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
         body { background-color: #f8f9fa; color: #333; }
         
-        /* --- CABECERA Y LOGO --- */
-        header { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 2rem; background: #fff; border-bottom: 1px solid #eee; }
-        .logo img { max-height: 45px; width: auto; object-fit: contain; display: block; }
-        nav a { margin-left: 1rem; text-decoration: none; color: #555; }
+        /* --- CABECERA Y LOGO (AGRANDADO) --- */
+        header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #fff; border-bottom: 1px solid #eee; }
+        .logo img { max-height: 75px; width: auto; object-fit: contain; display: block; }
+        nav a { margin-left: 1rem; text-decoration: none; color: #555; font-weight: 500; }
         
         /* --- SECCIÓN PRINCIPAL (HERO) --- */
-        .hero { text-align: center; padding: 2.5rem 1rem; background: #fff; margin-bottom: 2rem; }
+        .hero { text-align: center; padding: 2.5rem 1rem; background: #fff; margin-bottom: 1.5rem; }
         .hero h1 { font-size: 2rem; margin-bottom: 0.8rem; }
         .hero-desc { color: #555; font-size: 1rem; line-height: 1.6; max-width: 600px; margin: 0 auto 1.5rem auto; }
         
@@ -27,6 +27,17 @@
             color: #fff; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: bold; transition: opacity 0.3s;
         }
         .btn-ig:hover { opacity: 0.9; }
+
+        /* --- CONTROLES DE FILTRO Y ORDEN --- */
+        .filtros-wrapper { max-width: 1100px; margin: 0 auto 1.5rem auto; padding: 0 1rem; }
+        .filtros-card { background: #fff; padding: 1.2rem; border-radius: 8px; border: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; }
+        .filtro-grupo { display: flex; flex-wrap: wrap; gap: 0.8rem; flex-grow: 1; }
+        .filtro-control { flex: 1; min-width: 160px; }
+        .filtro-control label { display: block; font-size: 0.8rem; font-weight: bold; color: #666; margin-bottom: 0.3rem; text-transform: uppercase; }
+        .filtro-control input, .filtro-control select { 
+            width: 100%; padding: 0.6rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem; background: #fff; outline: none;
+        }
+        .filtro-control input:focus, .filtro-control select:focus { border-color: #000; }
 
         /* --- GRILLA Y TARJETAS --- */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; padding: 0 1rem; margin-bottom: 3rem; }
@@ -52,7 +63,7 @@
         .card-body { padding: 1.2rem; flex-grow: 1; display: flex; flex-direction: column; }
         .badge { display: inline-block; background: #eee; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; margin-bottom: 0.5rem; margin-right: 0.2rem;}
         .price { font-size: 1.5rem; font-weight: bold; color: #111; margin: 0.5rem 0; }
-        .loading { text-align: center; padding: 2rem; color: #666; grid-column: 1 / -1; }
+        .loading { text-align: center; padding: 3rem; color: #666; grid-column: 1 / -1; font-size: 1.1rem; }
         
         /* --- ESTILOS DEL LIGHTBOX (VISTA AMPLIADA) --- */
         .lightbox { 
@@ -80,7 +91,7 @@
 <body>
     <header>
         <div class="logo">
-            <img src="https://drive.google.com/thumbnail?id=1KEp15yYJBbyHchy9R3zQ8w7pgm5W2I6d&sz=w500" alt="AG Select Automotora">
+            <img src="https://drive.google.com/thumbnail?id=1ijRH919dI3BznZ6R9YhH22RnBm5srQ-7&sz=w1000" alt="AG Select Automotora">
         </div>
         <nav>
             <a href="#">Inicio</a>
@@ -105,8 +116,44 @@
         </a>
     </section>
 
+    <!-- PANEL DE FILTROS Y ORDENAMIENTO -->
+    <div class="filtros-wrapper">
+        <div class="filtros-card">
+            <div class="filtro-grupo">
+                <div class="filtro-control">
+                    <label for="buscarMarca">Buscar</label>
+                    <input type="text" id="buscarMarca" placeholder="Ej: Mercedes, Peugeot..." oninput="filtrarYOrdenar()">
+                </div>
+                <div class="filtro-control">
+                    <label for="filtroTransmision">Transmisión</label>
+                    <select id="filtroTransmision" onchange="filtrarYOrdenar()">
+                        <option value="todos">Todas</option>
+                    </select>
+                </div>
+                <div class="filtro-control">
+                    <label for="filtroCombustible">Combustible</label>
+                    <select id="filtroCombustible" onchange="filtrarYOrdenar()">
+                        <option value="todos">Todos</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="filtro-control" style="max-width: 220px;">
+                <label for="ordenarPor">Ordenar por</label>
+                <select id="ordenarPor" onchange="filtrarYOrdenar()">
+                    <option value="defecto">Destacados</option>
+                    <option value="precio-asc">Precio: Menor a Mayor</option>
+                    <option value="precio-desc">Precio: Mayor a Menor</option>
+                    <option value="km-asc">Kilometraje: Menor a Mayor</option>
+                    <option value="km-desc">Kilometraje: Mayor a Menor</option>
+                    <option value="ano-desc">Año: Más reciente</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
     <main class="grid" id="catalogo">
-        <div class="loading">Cargando vehículos...</div>
+        <div class="loading">Cargando catálogo de vehículos...</div>
     </main>
 
     <!-- Lightbox (Ventana grande) -->
@@ -126,9 +173,16 @@
         const urlGoogleSheet = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSoyaqfVzpHqZcc7bGS9zjS-ROjubr2PClpRQLB3qVKTlaYSdyvEfSTaRV9GXRaMyo4APnw2mSHmsFN/pub?output=csv";
 
         // Variables globales
+        window.todosLosAutos = [];
         window.galeriasAutos = {}; 
         window.indicesAutos = {};
         window.autoActualLightbox = null; 
+
+        // Auxiliar para limpiar números (precios, kilómetros, años)
+        function parseNumero(val) {
+            if (!val) return 0;
+            return parseInt(val.toString().replace(/\D/g, '')) || 0;
+        }
 
         // Carrusel en la tarjeta pequeña
         window.cambiarFoto = function(event, autoId, direccion) {
@@ -151,7 +205,7 @@
             let cEl = document.getElementById(`carousel-${autoId}`);
             if (cEl && cEl.dataset.swiped === "true") {
                 cEl.dataset.swiped = "false";
-                return; // Evita abrir la foto si el usuario solo estaba deslizándola
+                return;
             }
             window.autoActualLightbox = autoId;
             actualizarVistaLightbox();
@@ -195,34 +249,162 @@
             document.getElementById('btn-lb-next').style.display = displayFlechas;
         };
 
-        // --- Detección de gestos (Swipe táctil en Lightbox) ---
+        // Gestos táctiles en Lightbox
         let lbTouchStartX = 0;
         const lbElement = document.getElementById('lightbox');
-        
-        lbElement.addEventListener('touchstart', function(e) {
-            lbTouchStartX = e.changedTouches[0].clientX;
-        }, {passive: true});
-
+        lbElement.addEventListener('touchstart', function(e) { lbTouchStartX = e.changedTouches[0].clientX; }, {passive: true});
         lbElement.addEventListener('touchend', function(e) {
             let diff = e.changedTouches[0].clientX - lbTouchStartX;
             if (Math.abs(diff) > 40) {
-                if (diff < 0) cambiarFotoLightbox(e, 1);  // Deslizar a la izquierda -> foto siguiente
-                else cambiarFotoLightbox(e, -1);          // Deslizar a la derecha -> foto anterior
+                if (diff < 0) cambiarFotoLightbox(e, 1);
+                else cambiarFotoLightbox(e, -1);
             }
         }, {passive: true});
 
-        // --- Cargar Catálogo ---
+        // --- LÓGICA DE FILTRADO Y ORDENAMIENTO ---
+        function llenarDesplegables(datos) {
+            const transSet = new Set();
+            const combSet = new Set();
+
+            datos.forEach(auto => {
+                if (auto["Transmisión"] && auto["Transmisión"].trim() !== "") transSet.add(auto["Transmisión"].trim());
+                if (auto["Bencina/Diesel"] && auto["Bencina/Diesel"].trim() !== "") combSet.add(auto["Bencina/Diesel"].trim());
+            });
+
+            const selTrans = document.getElementById('filtroTransmision');
+            transSet.forEach(t => { selTrans.innerHTML += `<option value="${t}">${t}</option>`; });
+
+            const selComb = document.getElementById('filtroCombustible');
+            combSet.forEach(c => { selComb.innerHTML += `<option value="${c}">${c}</option>`; });
+        }
+
+        function filtrarYOrdenar() {
+            const textoBusqueda = document.getElementById('buscarMarca').value.toLowerCase().trim();
+            const transSel = document.getElementById('filtroTransmision').value;
+            const combSel = document.getElementById('filtroCombustible').value;
+            const ordenSel = document.getElementById('ordenarPor').value;
+
+            // 1. Filtrar
+            let resultado = window.todosLosAutos.filter(auto => {
+                const modeloMarca = (auto["Marca/Modelo"] || "").toLowerCase();
+                const desc = (auto["Descripción"] || "").toLowerCase();
+                const coincideTexto = modeloMarca.includes(textoBusqueda) || desc.includes(textoBusqueda);
+                
+                const coincideTrans = (transSel === 'todos') || (auto["Transmisión"] && auto["Transmisión"].trim() === transSel);
+                const coincideComb = (combSel === 'todos') || (auto["Bencina/Diesel"] && auto["Bencina/Diesel"].trim() === combSel);
+
+                return coincideTexto && coincideTrans && coincideComb;
+            });
+
+            // 2. Ordenar
+            resultado.sort((a, b) => {
+                const precioA = parseNumero(a["Precio (CLP)"]);
+                const precioB = parseNumero(b["Precio (CLP)"]);
+                const kmA = parseNumero(a["Kilometraje ($)"]);
+                const kmB = parseNumero(b["Kilometraje ($)"]);
+                const anoA = parseNumero(a["Año"]);
+                const anoB = parseNumero(b["Año"]);
+
+                if (ordenSel === 'precio-asc') return precioA - precioB;
+                if (ordenSel === 'precio-desc') return precioB - precioA;
+                if (ordenSel === 'km-asc') return kmA - kmB;
+                if (ordenSel === 'km-desc') return kmB - kmA;
+                if (ordenSel === 'ano-desc') return anoB - anoA;
+                return 0; // por defecto mantiene orden del Excel
+            });
+
+            renderizarAutos(resultado);
+        }
+
+        // --- RENDERIZAR AUTOS EN PANTALLA ---
+        function renderizarAutos(autos) {
+            const contenedor = document.getElementById('catalogo');
+            contenedor.innerHTML = ''; 
+
+            if (autos.length === 0) {
+                contenedor.innerHTML = `<div class="loading">No se encontraron vehículos que coincidan con la búsqueda.</div>`;
+                return;
+            }
+
+            autos.forEach((auto) => {
+                const idIndex = auto._id;
+                const tarjeta = document.createElement('div');
+                tarjeta.className = 'card';
+                
+                const fotosDelAuto = window.galeriasAutos[idIndex];
+                
+                let htmlCarrusel = `
+                    <div class="carousel" id="carousel-${idIndex}" onclick="abrirLightbox(${idIndex})">
+                        <img id="img-${idIndex}" src="${fotosDelAuto[window.indicesAutos[idIndex]]}" alt="${auto["Marca/Modelo"]}">
+                `;
+                
+                if (fotosDelAuto.length > 1) {
+                    htmlCarrusel += `
+                        <button class="carousel-btn prev-btn" onclick="cambiarFoto(event, ${idIndex}, -1)">&#10094;</button>
+                        <button class="carousel-btn next-btn" onclick="cambiarFoto(event, ${idIndex}, 1)">&#10095;</button>
+                        <div class="contador-fotos" id="contador-${idIndex}">${window.indicesAutos[idIndex] + 1}/${fotosDelAuto.length}</div>
+                    `;
+                }
+                htmlCarrusel += `</div>`;
+                
+                tarjeta.innerHTML = `
+                    ${htmlCarrusel}
+                    <div class="card-body">
+                        <div>
+                            <span class="badge">${auto["Año"]}</span>
+                            <span class="badge">${auto["Transmisión"]}</span>
+                            <span class="badge">${auto["Bencina/Diesel"]}</span>
+                        </div>
+                        
+                        <h3 style="margin-top: 0.5rem;">${auto["Marca/Modelo"]}</h3>
+                        <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">${auto["Descripción"]} • ${auto["Kilometraje ($)"]} km</p>
+                        
+                        <div class="price" style="margin-top: auto;">$${auto["Precio (CLP)"]}</div>
+                        
+                        <a href="https://wa.me/56963033129?text=Hola, me interesa el ${auto["Marca/Modelo"]}" class="btn" style="margin-top: 1rem; display: block; text-align: center; font-size: 0.95rem;">Me interesa</a>
+                    </div>
+                `;
+                contenedor.appendChild(tarjeta);
+
+                // Asignar Swipe Táctil
+                let cEl = document.getElementById(`carousel-${idIndex}`);
+                let startX = 0;
+
+                cEl.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    cEl.dataset.swiped = "false";
+                }, {passive: true});
+
+                cEl.addEventListener('touchmove', (e) => {
+                    if (Math.abs(e.touches[0].clientX - startX) > 10) {
+                        cEl.dataset.swiped = "true";
+                    }
+                }, {passive: true});
+
+                cEl.addEventListener('touchend', (e) => {
+                    if (cEl.dataset.swiped === "true") {
+                        let diff = e.changedTouches[0].clientX - startX;
+                        if (Math.abs(diff) > 35) {
+                            if (diff < 0) cambiarFoto(e, idIndex, 1);
+                            else cambiarFoto(e, idIndex, -1);
+                        }
+                    }
+                });
+            });
+        }
+
+        // --- CARGAR DATOS DESDE GOOGLE SHEETS ---
         function cargarAutos() {
             Papa.parse(urlGoogleSheet, {
                 download: true,
                 header: true,
                 complete: function(results) {
                     const datos = results.data;
-                    const contenedor = document.getElementById('catalogo');
-                    contenedor.innerHTML = ''; 
+                    window.todosLosAutos = [];
 
                     datos.forEach((auto, idIndex) => {
                         if(auto["Marca/Modelo"] && auto["Precio (CLP)"]) {
+                            auto._id = idIndex; // ID único interno
                             
                             let fotosDelAuto = [];
                             for(let i = 1; i <= 9; i++) {
@@ -241,69 +423,12 @@
 
                             window.galeriasAutos[idIndex] = fotosDelAuto;
                             window.indicesAutos[idIndex] = 0;
-
-                            const tarjeta = document.createElement('div');
-                            tarjeta.className = 'card';
-                            
-                            let htmlCarrusel = `
-                                <div class="carousel" id="carousel-${idIndex}" onclick="abrirLightbox(${idIndex})">
-                                    <img id="img-${idIndex}" src="${fotosDelAuto[0]}" alt="${auto["Marca/Modelo"]}">
-                            `;
-                            
-                            if (fotosDelAuto.length > 1) {
-                                htmlCarrusel += `
-                                    <button class="carousel-btn prev-btn" onclick="cambiarFoto(event, ${idIndex}, -1)">&#10094;</button>
-                                    <button class="carousel-btn next-btn" onclick="cambiarFoto(event, ${idIndex}, 1)">&#10095;</button>
-                                    <div class="contador-fotos" id="contador-${idIndex}">1/${fotosDelAuto.length}</div>
-                                `;
-                            }
-                            htmlCarrusel += `</div>`;
-                            
-                            tarjeta.innerHTML = `
-                                ${htmlCarrusel}
-                                <div class="card-body">
-                                    <div>
-                                        <span class="badge">${auto["Año"]}</span>
-                                        <span class="badge">${auto["Transmisión"]}</span>
-                                        <span class="badge">${auto["Bencina/Diesel"]}</span>
-                                    </div>
-                                    
-                                    <h3 style="margin-top: 0.5rem;">${auto["Marca/Modelo"]}</h3>
-                                    <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">${auto["Descripción"]} • ${auto["Kilometraje ($)"]} km</p>
-                                    
-                                    <div class="price" style="margin-top: auto;">$${auto["Precio (CLP)"]}</div>
-                                    
-                                    <a href="https://wa.me/56963033129?text=Hola, me interesa el ${auto["Marca/Modelo"]}" class="btn" style="margin-top: 1rem; display: block; text-align: center; font-size: 0.95rem;">Me interesa</a>
-                                </div>
-                            `;
-                            contenedor.appendChild(tarjeta);
-
-                            // --- Detección de swipe táctil en cada carrusel de tarjeta ---
-                            let cEl = document.getElementById(`carousel-${idIndex}`);
-                            let startX = 0;
-
-                            cEl.addEventListener('touchstart', (e) => {
-                                startX = e.touches[0].clientX;
-                                cEl.dataset.swiped = "false";
-                            }, {passive: true});
-
-                            cEl.addEventListener('touchmove', (e) => {
-                                if (Math.abs(e.touches[0].clientX - startX) > 10) {
-                                    cEl.dataset.swiped = "true";
-                                }
-                            }, {passive: true});
-
-                            cEl.addEventListener('touchend', (e) => {
-                                if (cEl.dataset.swiped === "true") {
-                                    let diff = e.changedTouches[0].clientX - startX;
-                                    if (Math.abs(diff) > 35) {
-                                        if (diff < 0) cambiarFoto(e, idIndex, 1);
-                                        else cambiarFoto(e, idIndex, -1);
-                                    }
-                                }
-                            });
+                            window.todosLosAutos.push(auto);
                         }
                     });
+
+                    llenarDesplegables(window.todosLosAutos);
+                    renderizarAutos(window.todosLosAutos);
                 }
             });
         }
