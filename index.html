@@ -108,7 +108,7 @@
         #flecha-filtros { transition: transform 0.3s ease; }
 
         .filtros-card { 
-            display: none; /* Oculto por defecto */
+            display: none; 
             background: #fff; padding: 1.5rem; border-radius: 8px; border: 1px solid #eee; 
             flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;
             margin-top: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
@@ -141,9 +141,18 @@
         .carousel img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; user-select: none; }
         .carousel:hover img { transform: scale(1.05); } 
         
+        /* BANNERS DE ESTADO SOBRE IMAGEN */
         .banner-vendido {
             position: absolute; top: 12px; left: 12px;
             background: #dc2743; color: #ffffff; padding: 6px 14px;
+            border-radius: 4px; font-weight: bold; font-size: 0.85rem;
+            text-transform: uppercase; z-index: 3; letter-spacing: 1px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .banner-proximamente {
+            position: absolute; top: 12px; left: 12px;
+            background: #28a745; color: #ffffff; padding: 6px 14px;
             border-radius: 4px; font-weight: bold; font-size: 0.85rem;
             text-transform: uppercase; z-index: 3; letter-spacing: 1px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -172,7 +181,7 @@
             padding: 2rem 1rem;
             text-align: center;
             border-top: 1px solid #eee;
-            margin-top: auto; /* Empuja el footer al fondo si hay pocos autos */
+            margin-top: auto;
         }
 
         .btn-ig-icon {
@@ -296,7 +305,7 @@
         <div class="loading">Cargando catálogo de vehículos...</div>
     </main>
 
-    <!-- FOOTER CON INSTAGRAM MINIMALISTA -->
+    <!-- FOOTER CON INSTAGRAM -->
     <footer>
         <p style="color: #666; font-size: 0.95rem; margin-bottom: 0.5rem; font-weight: 500;">Síguenos en Instagram</p>
         <a href="https://www.instagram.com/agselect_automotora?utm_source=ig_web_button_share_sheet&igsi=ZDNlZDc0MzIxNw==" target="_blank" class="btn-ig-icon" aria-label="Ir a Instagram">
@@ -308,7 +317,7 @@
         </a>
     </footer>
 
-    <!-- Lightbox -->
+    <!-- LIGHTBOX -->
     <div id="lightbox" class="lightbox" onclick="cerrarLightbox()">
         <span class="close-lightbox" onclick="cerrarLightbox()">&times;</span>
         <div class="lightbox-content">
@@ -507,10 +516,19 @@
                 
                 const fotosDelAuto = window.galeriasAutos[idIndex];
                 const estaVendido = esAutoVendido(auto);
+                const sinFotos = auto._sinFotos;
                 
+                // Determinar el banner a mostrar (Vendido o Próximamente)
+                let bannerHtml = '';
+                if (estaVendido) {
+                    bannerHtml = '<div class="banner-vendido">Vendido</div>';
+                } else if (sinFotos) {
+                    bannerHtml = '<div class="banner-proximamente">Próximamente</div>';
+                }
+
                 let htmlCarrusel = `
                     <div class="carousel" id="carousel-${idIndex}" onclick="abrirLightbox(${idIndex})">
-                        ${estaVendido ? '<div class="banner-vendido">Vendido</div>' : ''}
+                        ${bannerHtml}
                         <img id="img-${idIndex}" src="${fotosDelAuto[window.indicesAutos[idIndex]]}" alt="${auto["Marca/Modelo"]}">
                 `;
                 
@@ -595,9 +613,13 @@
                                 }
                             }
 
+                            // Si no hay fotos, asignar imagen por defecto de Drive y marcar flag
+                            let sinFotos = false;
                             if (fotosDelAuto.length === 0) {
-                                fotosDelAuto.push("https://placehold.co/800x500/eeeeee/999999?text=Sin+Imagen");
+                                sinFotos = true;
+                                fotosDelAuto.push("https://drive.google.com/thumbnail?id=1om9GwxN-t_VSK1245EryeYcxpdCh-guv&sz=w1000");
                             }
+                            auto._sinFotos = sinFotos;
 
                             window.galeriasAutos[idIndex] = fotosDelAuto;
                             window.indicesAutos[idIndex] = 0;
