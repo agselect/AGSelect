@@ -221,6 +221,24 @@
             flex-shrink: 0;
         }
 
+        /* Contenedores para agrupar icono y texto (Instagram, WP, Mail) */
+        .ig-wrapper, .wa-wrapper, .mail-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .ig-text, .wa-numbers, .mail-text {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            font-size: 0.95rem;
+            color: #222;
+            font-weight: 600;
+        }
+        
+        .wa-numbers { gap: 4px; } /* Ajuste fino solo para WhatsApp */
+
         /* Botón Instagram */
         .btn-ig {
             background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
@@ -232,12 +250,6 @@
         }
 
         /* Botón WhatsApp */
-        .wa-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
         .btn-wa {
             background: #25D366;
             box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
@@ -247,23 +259,7 @@
             box-shadow: 0 6px 16px rgba(37, 211, 102, 0.4);
         }
 
-        .wa-numbers {
-            display: flex;
-            flex-direction: column;
-            text-align: left;
-            font-size: 0.95rem;
-            color: #222;
-            font-weight: 600;
-            gap: 4px;
-        }
-
         /* Botón Correo / Gmail */
-        .mail-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
         .btn-mail {
             background: #ea4335;
             box-shadow: 0 4px 12px rgba(234, 67, 53, 0.3);
@@ -271,15 +267,6 @@
         .btn-mail:hover {
             transform: translateY(-4px) scale(1.05);
             box-shadow: 0 6px 16px rgba(234, 67, 53, 0.4);
-        }
-
-        .mail-text {
-            display: flex;
-            flex-direction: column;
-            text-align: left;
-            font-size: 0.95rem;
-            color: #222;
-            font-weight: 600;
         }
 
         /* --- LIGHTBOX --- */
@@ -395,13 +382,18 @@
             <!-- Sección Instagram -->
             <div class="footer-block">
                 <p class="footer-title">Síguenos en Instagram</p>
-                <a href="https://www.instagram.com/agselect_automotora?utm_source=ig_web_button_share_sheet&igsi=ZDNlZDc0MzIxNw==" target="_blank" class="btn-icon btn-ig" aria-label="Ir a Instagram">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                    </svg>
-                </a>
+                <div class="ig-wrapper">
+                    <a href="https://www.instagram.com/agselect_automotora?utm_source=ig_web_button_share_sheet&igsi=ZDNlZDc0MzIxNw==" target="_blank" class="btn-icon btn-ig" aria-label="Ir a Instagram">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                    <div class="ig-text">
+                        <span>@agselect_automotora</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Sección WhatsApp -->
@@ -660,104 +652,109 @@
                     htmlCarrusel += `
                         <button class="carousel-btn prev-btn" onclick="cambiarFoto(event, ${idIndex}, -1)">&#10094;</button>
                         <button class="carousel-btn next-btn" onclick="cambiarFoto(event, ${idIndex}, 1)">&#10095;</button>
-                        <div class="contador-fotos" id="contador-${idIndex}">${window.indicesAutos[idIndex] + 1}/${fotosDelAuto.length}</div>
+                        <div class="contador-fotos" id="contador-${idIndex}">1/${fotosDelAuto.length}</div>
                     `;
                 }
-                htmlCarrusel += `</div>`;
                 
-                const botonHtml = estaVendido
-                    ? `<a href="#" class="btn btn-disabled" style="margin-top: 1rem; display: block; text-align: center; font-size: 0.95rem;">No disponible</a>`
-                    : `<a href="https://wa.me/56963033129?text=Hola, me interesa el ${auto["Marca/Modelo"]}" class="btn" style="margin-top: 1rem; display: block; text-align: center; font-size: 0.95rem;">Me interesa</a>`;
+                htmlCarrusel += `</div>`;
+
+                const precioTexto = auto["Precio (CLP)"] ? `$${parseNumero(auto["Precio (CLP)"]).toLocaleString('es-CL')}` : 'Consultar';
+                const kmTexto = auto["Kilometraje ($)"] ? `${parseNumero(auto["Kilometraje ($)"]).toLocaleString('es-CL')} km` : 'N/A';
+                const anio = auto["Año"] || '';
+                const transmision = auto["Transmisión"] || '';
+                const combustible = auto["Bencina/Diesel"] || '';
+                const enlace = auto["Link a la publicación (Opcional)"] || '#';
+
+                let linkBoton = '';
+                if (!estaVendido) {
+                    linkBoton = `<a href="${enlace}" target="_blank" class="btn">Ver Detalles</a>`;
+                } else {
+                    linkBoton = `<button class="btn btn-disabled">Vendido</button>`;
+                }
 
                 tarjeta.innerHTML = `
                     ${htmlCarrusel}
                     <div class="card-body">
-                        <div>
-                            <span class="badge">${auto["Año"]}</span>
-                            <span class="badge">${auto["Transmisión"]}</span>
-                            <span class="badge">${auto["Bencina/Diesel"]}</span>
+                        <h3>${auto["Marca/Modelo"]}</h3>
+                        <div class="price">${precioTexto}</div>
+                        <div style="margin-bottom: 1rem;">
+                            ${anio ? `<span class="badge">${anio}</span>` : ''}
+                            ${kmTexto !== 'N/A' ? `<span class="badge">${kmTexto}</span>` : ''}
+                            ${transmision ? `<span class="badge">${transmision}</span>` : ''}
+                            ${combustible ? `<span class="badge">${combustible}</span>` : ''}
                         </div>
-                        
-                        <h3 style="margin-top: 0.5rem;">${auto["Marca/Modelo"]}</h3>
-                        <p style="color: #666; font-size: 0.9rem; margin-top: 0.3rem;">${auto["Descripción"]} • ${auto["Kilometraje ($)"]} km</p>
-                        
-                        <div class="price" style="margin-top: auto;">$${auto["Precio (CLP)"]}</div>
-                        
-                        ${botonHtml}
+                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 1.5rem; flex-grow: 1;">
+                            ${auto["Descripción"] || ''}
+                        </p>
+                        ${linkBoton}
                     </div>
                 `;
+                
                 contenedor.appendChild(tarjeta);
 
-                let cEl = document.getElementById(`carousel-${idIndex}`);
-                let startX = 0;
-
-                cEl.addEventListener('touchstart', (e) => {
-                    startX = e.touches[0].clientX;
+                // Eventos Touch para hacer Swipe en dispositivos móviles
+                let touchStartX = 0;
+                let cEl = tarjeta.querySelector('.carousel');
+                
+                cEl.addEventListener('touchstart', e => {
+                    touchStartX = e.changedTouches[0].clientX;
                     cEl.dataset.swiped = "false";
                 }, {passive: true});
-
-                cEl.addEventListener('touchmove', (e) => {
-                    if (Math.abs(e.touches[0].clientX - startX) > 10) {
+                
+                cEl.addEventListener('touchend', e => {
+                    let diff = e.changedTouches[0].clientX - touchStartX;
+                    if (Math.abs(diff) > 40) {
                         cEl.dataset.swiped = "true";
+                        if (diff < 0) {
+                            cambiarFoto(null, idIndex, 1);
+                        } else {
+                            cambiarFoto(null, idIndex, -1);
+                        }
                     }
                 }, {passive: true});
+            });
+        }
 
-                cEl.addEventListener('touchend', (e) => {
-                    if (cEl.dataset.swiped === "true") {
-                        let diff = e.changedTouches[0].clientX - startX;
-                        if (Math.abs(diff) > 35) {
-                            if (diff < 0) cambiarFoto(e, idIndex, 1);
-                            else cambiarFoto(e, idIndex, -1);
+        // --- CARGA INICIAL DE DATOS DESDE GOOGLE SHEETS ---
+        Papa.parse(urlGoogleSheet, {
+            download: true,
+            header: true,
+            complete: function(results) {
+                // Filtrar las filas vacías
+                let autos = results.data.filter(row => row["Marca/Modelo"] && row["Marca/Modelo"].trim() !== "");
+                
+                autos.forEach((auto, index) => {
+                    auto._id = index;
+                    let fotos = [];
+                    // Revisar hasta 10 columnas de fotos (Foto 1, Foto 2...)
+                    for(let i=1; i<=10; i++) {
+                        let urlFoto = auto[`Foto ${i}`];
+                        if(urlFoto && urlFoto.trim() !== "") {
+                            fotos.push(urlFoto.trim());
                         }
                     }
+                    
+                    // Si no tiene fotos, asignar la de Próximamente
+                    if(fotos.length === 0) {
+                        fotos.push('https://via.placeholder.com/600x400?text=Pr%C3%B3ximamente');
+                        auto._sinFotos = true;
+                    } else {
+                        auto._sinFotos = false;
+                    }
+                    
+                    window.galeriasAutos[index] = fotos;
+                    window.indicesAutos[index] = 0;
                 });
-            });
-        }
 
-        function cargarAutos() {
-            Papa.parse(urlGoogleSheet, {
-                download: true,
-                header: true,
-                complete: function(results) {
-                    const datos = results.data;
-                    window.todosLosAutos = [];
-
-                    datos.forEach((auto, idIndex) => {
-                        if(auto["Marca/Modelo"] && auto["Precio (CLP)"]) {
-                            auto._id = idIndex;
-                            
-                            let fotosDelAuto = [];
-                            for(let i = 1; i <= 9; i++) {
-                                let fotoDrive = auto[`Foto ${i}`];
-                                if (fotoDrive && fotoDrive.trim() !== "") {
-                                    const match = fotoDrive.match(/[-\w]{25,}/);
-                                    if (match) {
-                                        fotosDelAuto.push(`https://drive.google.com/thumbnail?id=${match[0]}&sz=w1000`);
-                                    }
-                                }
-                            }
-
-                            // Si no hay fotos, asignar imagen por defecto de Drive y marcar flag
-                            let sinFotos = false;
-                            if (fotosDelAuto.length === 0) {
-                                sinFotos = true;
-                                fotosDelAuto.push("https://drive.google.com/thumbnail?id=1om9GwxN-t_VSK1245EryeYcxpdCh-guv&sz=w1000");
-                            }
-                            auto._sinFotos = sinFotos;
-
-                            window.galeriasAutos[idIndex] = fotosDelAuto;
-                            window.indicesAutos[idIndex] = 0;
-                            window.todosLosAutos.push(auto);
-                        }
-                    });
-
-                    llenarDesplegables(window.todosLosAutos);
-                    renderizarAutos(window.todosLosAutos);
-                }
-            });
-        }
-
-        cargarAutos();
+                window.todosLosAutos = autos;
+                llenarDesplegables(autos);
+                filtrarYOrdenar(); // Muestra todos los autos por defecto
+            },
+            error: function(err) {
+                console.error("Error al cargar los datos:", err);
+                document.getElementById('catalogo').innerHTML = '<div class="loading">Error al cargar los vehículos. Por favor, intenta más tarde.</div>';
+            }
+        });
     </script>
 </body>
 </html>
