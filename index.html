@@ -8,41 +8,33 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
         
-        /* Reservamos el espacio superior para que el contenido no quede oculto bajo el header flotante */
         body { 
             background-color: #f8f9fa; 
             color: #333; 
             padding-top: 180px; 
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
         
-        /* --- CABECERA FLOTANTE (FIXED) PARA EVITAR SALTOS EN EL SCROLL --- */
+        /* --- CABECERA FLOTANTE --- */
         header { 
-            position: fixed; /* Cambiado a fixed para eliminar el tirón de layout */
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
+            position: fixed; 
+            top: 0; left: 0; width: 100%; z-index: 1000;
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(8px);
             height: 180px; 
             border-bottom: 1px solid transparent; 
-            /* Curva de animación súper suave (ease-out) */
             transition: height 0.5s cubic-bezier(0.25, 1, 0.5, 1), 
-                        border-color 0.5s ease,
-                        box-shadow 0.5s ease,
-                        background 0.5s ease;
+                        border-color 0.5s ease, box-shadow 0.5s ease, background 0.5s ease;
             overflow: hidden;
         }
 
         .header-inner {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 1rem;
-            position: relative;
-            height: 100%;
+            max-width: 1100px; margin: 0 auto; padding: 0 1rem;
+            position: relative; height: 100%;
         }
 
-        /* Estado al hacer Scroll */
         header.scrolled {
             height: 75px; 
             border-bottom: 1px solid #eee;
@@ -50,55 +42,38 @@
             background: rgba(255, 255, 255, 1);
         }
 
-        /* LOGO POSICIONADO ABSOLUTAMENTE PARA ANIMACIÓN SIN SALTOS */
         .logo {
-            position: absolute;
-            top: 50%;
-            left: 50%;
+            position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-            margin: 0;
-            will-change: transform, left, top;
+            margin: 0; will-change: transform, left, top;
         }
 
         header.scrolled .logo {
-            left: 1rem; 
-            transform: translate(0, -50%);
+            left: 1rem; transform: translate(0, -50%);
         }
 
         .logo img { 
-            max-height: 140px; 
-            width: auto; 
-            object-fit: contain; 
-            display: block; 
+            max-height: 140px; width: auto; object-fit: contain; display: block; 
             transition: max-height 0.5s cubic-bezier(0.25, 1, 0.5, 1);
             will-change: max-height;
         }
 
-        header.scrolled .logo img {
-            max-height: 48px; 
-        }
+        header.scrolled .logo img { max-height: 48px; }
         
-        /* Ajustes responsivos para cabecera */
         @media (max-width: 768px) {
             body { padding-top: 140px; }
             header { height: 140px; }
             .logo img { max-height: 100px; }
-            
             header.scrolled { height: 65px; }
             header.scrolled .logo img { max-height: 40px; }
         }
 
         /* --- SECCIÓN PRINCIPAL (HERO) --- */
         .hero { 
-            text-align: center; 
-            padding: 4rem 1rem; 
-            margin-bottom: 2rem; 
-            min-height: 320px; 
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            text-align: center; padding: 4rem 1rem; margin-bottom: 2rem; 
+            min-height: 280px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
             background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), 
                         url('https://drive.google.com/thumbnail?id=13-0wFNbG5KIKPUsrMOEQ0fjqimf1bkLy&sz=w2000') center center / cover no-repeat;
             border-bottom: 1px solid #eee;
@@ -106,29 +81,49 @@
 
         @media (min-width: 768px) {
             .hero {
-                min-height: 420px; 
-                padding: 6rem 2rem;
-                background-attachment: fixed; /* Parallax fluido en PC */
+                min-height: 380px; padding: 6rem 2rem;
+                background-attachment: fixed;
             }
         }
 
         .hero h1 { font-size: 2.2rem; margin-bottom: 0.8rem; color: #111; text-shadow: 0 1px 3px rgba(255,255,255,0.8); }
-        .hero-desc { color: #444; font-size: 1.05rem; line-height: 1.6; max-width: 600px; margin: 0 auto 1.5rem auto; font-weight: 500; }
+        .hero-desc { color: #444; font-size: 1.05rem; line-height: 1.6; max-width: 600px; margin: 0 auto; font-weight: 500; }
         
         .btn { display: inline-block; background: #000; color: #fff; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: bold; }
         .btn-disabled { background: #888 !important; color: #fff !important; cursor: not-allowed; pointer-events: none; }
-        
-        .btn-ig { 
-            display: inline-flex; align-items: center; justify-content: center; gap: 8px; 
-            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); 
-            color: #fff; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: bold; transition: opacity 0.3s;
-            box-shadow: 0 4px 10px rgba(220, 39, 67, 0.3);
-        }
-        .btn-ig:hover { opacity: 0.9; box-shadow: 0 6px 15px rgba(220, 39, 67, 0.4); }
 
-        /* --- CONTROLES DE FILTRO --- */
-        .filtros-wrapper { max-width: 1100px; margin: 0 auto 1.5rem auto; padding: 0 1rem; }
-        .filtros-card { background: #fff; padding: 1.2rem; border-radius: 8px; border: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; }
+        /* --- BOTÓN Y PANEL DE FILTROS --- */
+        .filtros-wrapper { max-width: 1100px; margin: 0 auto 2rem auto; padding: 0 1rem; width: 100%; }
+        
+        .btn-toggle-filtros {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            width: 100%; background: #fff; color: #111; padding: 1rem;
+            border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; font-weight: bold;
+            cursor: pointer; transition: background 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        .btn-toggle-filtros:hover { background: #fafafa; }
+        .btn-toggle-filtros svg { width: 18px; height: 18px; }
+        
+        #flecha-filtros { transition: transform 0.3s ease; }
+
+        .filtros-card { 
+            display: none; /* Oculto por defecto */
+            background: #fff; padding: 1.5rem; border-radius: 8px; border: 1px solid #eee; 
+            flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;
+            margin-top: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .filtros-card.show { 
+            display: flex; 
+            animation: fadeIn 0.4s ease forwards;
+        }
+
         .filtro-grupo { display: flex; flex-wrap: wrap; gap: 0.8rem; flex-grow: 1; }
         .filtro-control { flex: 1; min-width: 130px; }
         .filtro-control label { display: block; font-size: 0.8rem; font-weight: bold; color: #666; margin-bottom: 0.3rem; text-transform: uppercase; }
@@ -138,7 +133,7 @@
         .filtro-control input:focus, .filtro-control select:focus { border-color: #000; }
 
         /* --- GRILLA Y TARJETAS --- */
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; padding: 0 1rem; margin-bottom: 3rem; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; padding: 0 1rem; margin-bottom: 3rem; width: 100%; flex-grow: 1;}
         .card { background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #eee; display: flex; flex-direction: column; transition: transform 0.3s, box-shadow 0.3s; }
         .card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
         
@@ -171,6 +166,29 @@
         .price { font-size: 1.5rem; font-weight: bold; color: #111; margin: 0.5rem 0; }
         .loading { text-align: center; padding: 3rem; color: #666; grid-column: 1 / -1; font-size: 1.1rem; }
         
+        /* --- FOOTER & INSTAGRAM --- */
+        footer {
+            background: #fff;
+            padding: 2rem 1rem;
+            text-align: center;
+            border-top: 1px solid #eee;
+            margin-top: auto; /* Empuja el footer al fondo si hay pocos autos */
+        }
+
+        .btn-ig-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 55px; height: 55px; border-radius: 50%;
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            color: #fff; text-decoration: none; margin-top: 10px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 12px rgba(220, 39, 67, 0.3);
+        }
+
+        .btn-ig-icon:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 6px 16px rgba(220, 39, 67, 0.4);
+        }
+
         /* --- LIGHTBOX --- */
         .lightbox { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -210,19 +228,19 @@
             <p>Te asesoramos en todo el proceso.</p>
             <p>Servicio de Carhunter - encontramos tu próximo auto. 🔍</p>
         </div>
-        <a href="https://www.instagram.com/agselect_automotora?utm_source=ig_web_button_share_sheet&igsi=ZDNlZDc0MzIxNw==" target="_blank" class="btn-ig">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-            </svg>
-            Síguenos en Instagram
-        </a>
     </section>
 
-    <!-- PANEL DE FILTROS Y ORDENAMIENTO -->
+    <!-- BOTÓN Y PANEL DE FILTROS DESPLEGABLES -->
     <div class="filtros-wrapper">
-        <div class="filtros-card">
+        <button class="btn-toggle-filtros" onclick="toggleFiltros()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            Filtros y Orden
+            <span id="flecha-filtros" style="display: inline-block;">▼</span>
+        </button>
+
+        <div class="filtros-card" id="panelFiltros">
             <div class="filtro-grupo">
                 <div class="filtro-control">
                     <label for="buscarMarca">Buscar</label>
@@ -278,6 +296,18 @@
         <div class="loading">Cargando catálogo de vehículos...</div>
     </main>
 
+    <!-- FOOTER CON INSTAGRAM MINIMALISTA -->
+    <footer>
+        <p style="color: #666; font-size: 0.95rem; margin-bottom: 0.5rem; font-weight: 500;">Síguenos en Instagram</p>
+        <a href="https://www.instagram.com/agselect_automotora?utm_source=ig_web_button_share_sheet&igsi=ZDNlZDc0MzIxNw==" target="_blank" class="btn-ig-icon" aria-label="Ir a Instagram">
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+            </svg>
+        </a>
+    </footer>
+
     <!-- Lightbox -->
     <div id="lightbox" class="lightbox" onclick="cerrarLightbox()">
         <span class="close-lightbox" onclick="cerrarLightbox()">&times;</span>
@@ -297,16 +327,25 @@
         window.indicesAutos = {};
         window.autoActualLightbox = null; 
 
-        // DETECTOR DE SCROLL REFINADO
+        // DETECTOR DE SCROLL
         window.addEventListener('scroll', () => {
             const header = document.getElementById('header');
-            // Agregamos una pequeña tolerancia para que no titile si el usuario roza apenas el scroll
-            if (window.scrollY > 50) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
-            }
+            if (window.scrollY > 50) header.classList.add('scrolled');
+            else header.classList.remove('scrolled');
         });
+
+        // FUNCIÓN PARA DESPLEGAR FILTROS
+        function toggleFiltros() {
+            const panel = document.getElementById('panelFiltros');
+            const flecha = document.getElementById('flecha-filtros');
+            if (panel.classList.contains('show')) {
+                panel.classList.remove('show');
+                flecha.style.transform = "rotate(0deg)";
+            } else {
+                panel.classList.add('show');
+                flecha.style.transform = "rotate(180deg)";
+            }
+        }
 
         function parseNumero(val) {
             if (!val) return 0;
@@ -315,13 +354,8 @@
 
         function esAutoVendido(auto) {
             const rawEstado = (
-                auto["Estado"] || 
-                auto["Disponibilidad"] || 
-                auto["Disponible"] || 
-                auto["Estado/Disponibilidad"] || 
-                ""
+                auto["Estado"] || auto["Disponibilidad"] || auto["Disponible"] || auto["Estado/Disponibilidad"] || ""
             ).toLowerCase().trim();
-            
             return rawEstado.includes("vendido") || rawEstado.includes("no disponible") || rawEstado === "no";
         }
 
@@ -339,10 +373,7 @@
 
         window.abrirLightbox = function(autoId) {
             let cEl = document.getElementById(`carousel-${autoId}`);
-            if (cEl && cEl.dataset.swiped === "true") {
-                cEl.dataset.swiped = "false";
-                return;
-            }
+            if (cEl && cEl.dataset.swiped === "true") { cEl.dataset.swiped = "false"; return; }
             window.autoActualLightbox = autoId;
             actualizarVistaLightbox();
             document.getElementById('lightbox').style.display = 'flex';
